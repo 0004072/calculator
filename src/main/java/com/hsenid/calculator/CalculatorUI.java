@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * Created by hsenid on 12/1/16.
  */
-public class CalculatorUI extends Frame{
+public class CalculatorUI extends Frame {
     private JPanel mainPanel;
     private JTextField txtInput;
     private JButton btnOct;
@@ -49,68 +49,22 @@ public class CalculatorUI extends Frame{
     private JButton btnLog;
     private JButton btnComb;
     private JButton btnPower;
-    private JButton btnShift;
+    private JToggleButton btnShift;
     private JButton btnPermut;
     private JButton btnHex;
     private JList<Object> listHistory;
+    private JTextField txtOutput;
     private DefaultListModel<String> listHistoryArray;
 
     //Input string manipulation pointers
     private int currentLeft, currentRight;
 
     //Operation stacks: Declarations
-    OpStack leftOperands, operators, rightOperands;
+    private OpStack leftOperands, operators, rightOperands;
 
-    //Operations
-    private Map<Character, Integer> operations;
-
-    private String parseNumber(){
-        String num = txtInput.getText().substring(currentLeft, currentRight - 1);
-        currentLeft = currentRight;
-        return num;
-    }
-
-    private void evaluate(){
-        double left = Double.parseDouble(leftOperands.pop()), right = Double.parseDouble(rightOperands.pop());
-        String operator = operators.pop();
-        switch(operator){
-            case "+":
-                rightOperands.push(String.valueOf(left + right));
-                break;
-
-            case "-":
-                rightOperands.push(String.valueOf(left - right));
-                break;
-
-            case "*":
-                rightOperands.push(String.valueOf(left * right));
-                break;
-
-            case "/":
-                try{
-                    rightOperands.push(String.valueOf(left / right));
-                }
-                catch(ArithmeticException ae){
-                    ae.printStackTrace();
-                }
-                break;
-
-            case "%":
-                rightOperands.push(String.valueOf(left * right / 100));
-                break;
-
-            case "(":
-                // TODO: 12/2/16 Handle the end of parenthesis
-                break;
-            default:
-                try{
-                    throw new UnsupportedOperationException();
-                }
-                catch(UnsupportedOperationException uoe){
-                    uoe.printStackTrace();
-                }
-        }
-    }
+    //Operations & functions
+    private Map<Character, Integer> operatorPrecedence;
+    private Set<String> functions;
 
     public CalculatorUI() {
         //History list initializations
@@ -125,15 +79,18 @@ public class CalculatorUI extends Frame{
         operators = new OpStack("operators");
 
         //Operations map : Initialization
-        operations = new HashMap<>();
-        operations.put('(', 5);
-        operations.put(')', 5);
-        operations.put('*', 4);
-        operations.put('/', 4);
-        operations.put('%', 4);
-        operations.put('+', 2);
-        operations.put('-', 2);
-        operations.put('√', 4);
+        operatorPrecedence = new HashMap<>();
+        operatorPrecedence.put('(', 6);
+        operatorPrecedence.put(')', 7);
+        operatorPrecedence.put('*', 4);
+        operatorPrecedence.put('/', 4);
+        operatorPrecedence.put('%', 4);
+        operatorPrecedence.put('+', 2);
+        operatorPrecedence.put('-', 2);
+        operatorPrecedence.put('√', 4);
+
+        //Functions list: Initialization
+        functions = new HashSet<>();
 
         //Action definition for the text change in the txtInput text field.
         txtInput.getDocument().addDocumentListener(new DocumentListener() {
@@ -194,24 +151,21 @@ public class CalculatorUI extends Frame{
                 // TODO: 12/1/16 Implement validation prior to evaluation
                 txtInput.setText(txtInput.getText().concat("="));
                 rightOperands.push(parseNumber());
-                while(!leftOperands.isEmpty()){
-                    System.out.println("ExpEval...");
+                while (!leftOperands.isEmpty()) {
                     evaluate();
                 }
-                leftOperands.consoleLog();
-                rightOperands.consoleLog();
-                operators.consoleLog();
-                listHistoryArray.insertElementAt(txtInput.getText(), listHistoryArray.getSize());
+                String result = rightOperands.pop();
+                listHistoryArray.insertElementAt(txtInput.getText().concat(result), listHistoryArray.getSize());
                 listHistory.setListData(listHistoryArray.toArray());
+                txtOutput.setText(result);
             }
         });
     }
 
     public static void main(String[] args) {
-        try{
+        try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         JFrame frame = new JFrame("Calculator");
@@ -224,18 +178,81 @@ public class CalculatorUI extends Frame{
         frame.setVisible(true);
     }
 
-    private class HistorySelectListener implements ListSelectionListener{
+    private String parseNumber() {
+        String num = txtInput.getText();
+        num = num.substring(currentLeft, currentRight - 1);
+        currentLeft = currentRight;
+        return num;
+    }
+
+    private String evaluate() {
+//        System.out.println("eval...");
+//        leftOperands.consoleLog();
+//        operators.consoleLog();
+//        rightOperands.consoleLog();
+        double left = Double.parseDouble(leftOperands.pop());
+        double right = Double.parseDouble(rightOperands.pop());
+        String operator = operators.pop();
+        switch (operator) {
+            case "+":
+                rightOperands.push(String.valueOf(left + right));
+                break;
+
+            case "-":
+                rightOperands.push(String.valueOf(left - right));
+                break;
+
+            case "*":
+                rightOperands.push(String.valueOf(left * right));
+                break;
+
+            case "/":
+                try {
+                    rightOperands.push(String.valueOf(left / right));
+                } catch (ArithmeticException ae) {
+                    ae.printStackTrace();
+                }
+                break;
+
+            case "%":
+                rightOperands.push(String.valueOf(left * right / 100));
+                break;
+
+            case "(":
+                // TODO: 12/2/16 Handle the end of parenthesis.
+                leftOperands.push(String.valueOf(left));
+                rightOperands.push(String.valueOf(right));
+                break;
+
+            default:
+                try {
+                    throw new UnsupportedOperationException();
+                } catch (UnsupportedOperationException uoe) {
+                    uoe.printStackTrace();
+                }
+        }
+        return operator;
+    }
+
+    //Test methods
+    public void traceStacks() {
+        leftOperands.consoleLog();
+        operators.consoleLog();
+        rightOperands.consoleLog();
+    }
+
+    private class HistorySelectListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
             Object selected = listHistory.getSelectedValue();
-            if(selected == null)
+            if (selected == null)
                 return;
-            txtInput.setText(selected.toString());
+            txtInput.setText(selected.toString().split("=")[0]);
             listHistory.clearSelection();
         }
     }
 
-    private class NumericPressListener implements ActionListener{
+    private class NumericPressListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             txtInput.setText(txtInput.getText().concat(e.getActionCommand()));
@@ -244,52 +261,93 @@ public class CalculatorUI extends Frame{
 
     private class ArithmeticOpsPressListener extends NumericPressListener {
         @Override
-        public void actionPerformed(ActionEvent e){
+        public void actionPerformed(ActionEvent e) {
             super.actionPerformed(e);
+
             //On-the-fly evaluation of expressions
-            char operatorThis = e.getActionCommand().charAt(0);
-            while(true){
-                //If the operators stack is empty. i.e no operations were started
-                if(operators.isEmpty()){
-                    System.out.println("beginning");
-                    operators.push(String.valueOf(operatorThis));
-                    leftOperands.push(parseNumber());
-                    break;
+            char currentOperator = e.getActionCommand().charAt(0);
+
+            if (currentOperator == ')') {
+
+                if (currentLeft != currentRight) {
+                    String num = parseNumber();
+                    if (!num.equals(""))
+                        rightOperands.push(num);
                 }
 
-                else if(rightOperands.isEmpty()){
-                    System.out.println("right operand");
-                    rightOperands.push(parseNumber());
-                }
+                currentRight++;
+                currentLeft = currentRight;
+                boolean openParenthesisFound = false;
+                boolean thisIsNested = false;
+                while (true) {
+                    if (operators.isEmpty()) {
+                        //Error conditions need to be handled
 
-                char previousOperator = operators.peek().charAt(0);
-                System.out.println("else");
-                //If this operator has equal or greater precedence than the previous
-                if(operations.get(operatorThis) > operations.get(previousOperator)){
-                    System.out.println("high precedence operator");
-                    leftOperands.push(rightOperands.pop());
-                    operators.push(String.valueOf(operatorThis));
-                    break;
-                }
-
-                //Otherwise
-                else{
-                    System.out.println("equal/low precedence operator");
-                    while(true){
-                        if(operators.isEmpty() || (operators.peek().matches("[(]"))){
-                            break;
-                        }
-                        evaluate();
+                        //If no errors
+                        leftOperands.push(rightOperands.pop());
+                        break;
                     }
-                    leftOperands.push(rightOperands.pop());
-                    operators.push(String.valueOf(operatorThis));
-                    break;
+
+                    String operationCompleted = evaluate();
+
+                    if (openParenthesisFound) {
+                        if (operationCompleted.equals("("))
+                            thisIsNested = true;
+                    }
+
+                    if (openParenthesisFound && thisIsNested) {
+                        leftOperands.push(rightOperands.pop());
+                        operators.push("(");
+                        break;
+                    }
+
+                    if (operationCompleted.equals("("))
+                        openParenthesisFound = true;
+                }
+            } else {
+                if (operators.isEmpty()) {
+                    if (currentLeft != currentRight) {
+                        String num = parseNumber();
+                        if (!num.equals(""))
+                            leftOperands.push(num);
+                    }
+                    operators.push(String.valueOf(currentOperator));
+                } else if (rightOperands.isEmpty()) {
+                    String num = "";
+                    if (currentLeft != currentRight)
+                        num = parseNumber();
+
+                    if (!num.matches("")) {
+                        rightOperands.push(num);
+
+                        char previousOperator = operators.peek().charAt(0);
+
+                        if (operatorPrecedence.get(currentOperator) > operatorPrecedence.get(previousOperator)) {
+                            leftOperands.push(rightOperands.pop());
+                            operators.push(String.valueOf(currentOperator));
+                        } else {
+                            while (true) {
+                                if (!operators.isEmpty())
+                                    previousOperator = operators.peek().charAt(0);
+                                if (operators.isEmpty() || (operatorPrecedence.get(currentOperator) > operatorPrecedence.get(previousOperator))) {
+                                    leftOperands.push(rightOperands.pop());
+                                    operators.push(String.valueOf(currentOperator));
+                                    break;
+                                }
+                                if (previousOperator == '(') {
+                                    leftOperands.push(rightOperands.pop());
+                                    operators.push(String.valueOf(currentOperator));
+                                    break;
+                                }
+                                evaluate();
+                            }
+                        }
+                    } else
+                        operators.push(String.valueOf(currentOperator));
                 }
             }
-            leftOperands.consoleLog();
-            rightOperands.consoleLog();
-            operators.consoleLog();
-            // TODO: 12/2/16 Implement on-the-fly behavior of the operators
+            txtOutput.setText(leftOperands.peek());
+            traceStacks();
         }
     }
 }
