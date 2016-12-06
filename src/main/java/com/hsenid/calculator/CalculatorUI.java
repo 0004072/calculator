@@ -149,15 +149,27 @@ public class CalculatorUI extends Frame {
         btnEquals.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // TODO: 12/1/16 Implement validation prior to evaluation
-                txtInput.setText(txtInput.getText().concat("="));
-                rightOperands.push(parseNumber());
-                while (!leftOperands.isEmpty()) {
-                    evaluate();
+                try {
+                    if (txtInput.getText().matches("(.*)[\\d]+")) {
+                        txtInput.setText(txtInput.getText().concat(" "));
+                        rightOperands.push(parseNumber());
+                    }
+
+                    while (!leftOperands.isEmpty()) {
+                        if (operators.isEmpty() && rightOperands.isEmpty()) {
+                            rightOperands.push(leftOperands.pop());
+                            break;
+                        }
+                        evaluate();
+                    }
+                    String result = rightOperands.pop();
+                    listHistoryArray.insertElementAt(txtInput.getText().concat("=").concat(result), listHistoryArray.getSize());
+                    listHistory.setListData(listHistoryArray.toArray());
+                    txtOutput.setText(result);
+                } catch (Exception e1) {
+                    txtOutput.setText("Malformed expression!");
+                    e1.printStackTrace();
                 }
-                String result = rightOperands.pop();
-                listHistoryArray.insertElementAt(txtInput.getText().concat(result), listHistoryArray.getSize());
-                listHistory.setListData(listHistoryArray.toArray());
-                txtOutput.setText(result);
             }
         });
     }
@@ -186,50 +198,47 @@ public class CalculatorUI extends Frame {
     }
 
     private String evaluate() {
-//        System.out.println("eval...");
-//        leftOperands.consoleLog();
-//        operators.consoleLog();
-//        rightOperands.consoleLog();
-        double left = Double.parseDouble(leftOperands.pop());
-        double right = Double.parseDouble(rightOperands.pop());
         String operator = operators.pop();
-        switch (operator) {
-            case "+":
-                rightOperands.push(String.valueOf(left + right));
-                break;
+        if (operator.charAt(0) != '(') {
+            double left = Double.parseDouble(leftOperands.pop());
+            double right = Double.parseDouble(rightOperands.pop());
+            switch (operator) {
+                case "+":
+                    rightOperands.push(String.valueOf(left + right));
+                    break;
 
-            case "-":
-                rightOperands.push(String.valueOf(left - right));
-                break;
+                case "-":
+                    rightOperands.push(String.valueOf(left - right));
+                    break;
 
-            case "*":
-                rightOperands.push(String.valueOf(left * right));
-                break;
+                case "*":
+                    rightOperands.push(String.valueOf(left * right));
+                    break;
 
-            case "/":
-                try {
-                    rightOperands.push(String.valueOf(left / right));
-                } catch (ArithmeticException ae) {
-                    ae.printStackTrace();
-                }
-                break;
+                case "/":
+                    try {
+                        rightOperands.push(String.valueOf(left / right));
+                    } catch (ArithmeticException ae) {
+                        ae.printStackTrace();
+                    }
+                    break;
 
-            case "%":
-                rightOperands.push(String.valueOf(left * right / 100));
-                break;
+                case "%":
+                    rightOperands.push(String.valueOf(left * right / 100));
+                    break;
 
-            case "(":
-                // TODO: 12/2/16 Handle the end of parenthesis.
-                leftOperands.push(String.valueOf(left));
-                rightOperands.push(String.valueOf(right));
-                break;
+                case "(":
+                    leftOperands.push(String.valueOf(left));
+                    rightOperands.push(String.valueOf(right));
+                    break;
 
-            default:
-                try {
-                    throw new UnsupportedOperationException();
-                } catch (UnsupportedOperationException uoe) {
-                    uoe.printStackTrace();
-                }
+                default:
+                    try {
+                        throw new UnsupportedOperationException();
+                    } catch (UnsupportedOperationException uoe) {
+                        uoe.printStackTrace();
+                    }
+            }
         }
         return operator;
     }
@@ -267,87 +276,115 @@ public class CalculatorUI extends Frame {
             //On-the-fly evaluation of expressions
             char currentOperator = e.getActionCommand().charAt(0);
 
-            if (currentOperator == ')') {
+            try {
+                if (currentOperator == ')') {
 
-                if (currentLeft != currentRight) {
-                    String num = parseNumber();
-                    if (!num.equals(""))
-                        rightOperands.push(num);
-                }
-
-                currentRight++;
-                currentLeft = currentRight;
-                boolean openParenthesisFound = false;
-                boolean thisIsNested = false;
-                while (true) {
-                    if (operators.isEmpty()) {
-                        //Error conditions need to be handled
-
-                        //If no errors
-                        leftOperands.push(rightOperands.pop());
-                        break;
-                    }
-
-                    String operationCompleted = evaluate();
-
-                    if (openParenthesisFound) {
-                        if (operationCompleted.equals("("))
-                            thisIsNested = true;
-                    }
-
-                    if (openParenthesisFound && thisIsNested) {
-                        leftOperands.push(rightOperands.pop());
-                        operators.push("(");
-                        break;
-                    }
-
-                    if (operationCompleted.equals("("))
-                        openParenthesisFound = true;
-                }
-            } else {
-                if (operators.isEmpty()) {
                     if (currentLeft != currentRight) {
                         String num = parseNumber();
                         if (!num.equals(""))
-                            leftOperands.push(num);
+                            rightOperands.push(num);
                     }
-                    operators.push(String.valueOf(currentOperator));
-                } else if (rightOperands.isEmpty()) {
-                    String num = "";
-                    if (currentLeft != currentRight)
-                        num = parseNumber();
 
-                    if (!num.matches("")) {
-                        rightOperands.push(num);
+                    currentRight++;
+                    currentLeft = currentRight;
+                    boolean openParenthesisFound = false;
+                    boolean thisIsNested = false;
+                    while (true) {
+                        if (!leftOperands.isEmpty() && operators.isEmpty() && rightOperands.isEmpty())
+                            break;
 
-                        char previousOperator = operators.peek().charAt(0);
+                        /*if (operators.isEmpty()) {
+                            //Error conditions need to be handled
 
-                        if (operatorPrecedence.get(currentOperator) > operatorPrecedence.get(previousOperator)) {
+                            //If no errors
                             leftOperands.push(rightOperands.pop());
-                            operators.push(String.valueOf(currentOperator));
-                        } else {
-                            while (true) {
-                                if (!operators.isEmpty())
-                                    previousOperator = operators.peek().charAt(0);
-                                if (operators.isEmpty() || (operatorPrecedence.get(currentOperator) > operatorPrecedence.get(previousOperator))) {
-                                    leftOperands.push(rightOperands.pop());
-                                    operators.push(String.valueOf(currentOperator));
-                                    break;
-                                }
-                                if (previousOperator == '(') {
-                                    leftOperands.push(rightOperands.pop());
-                                    operators.push(String.valueOf(currentOperator));
-                                    break;
-                                }
-                                evaluate();
+                            break;
+                        }*/
+
+                        if (!operators.isEmpty() && operators.peek().charAt(0) == '(') {
+                            if (rightOperands.isEmpty()) {
+                                rightOperands.push(leftOperands.pop());
+                                //operators.pop();
+                            }
+
+
+                            if (leftOperands.isEmpty()) {
+                                leftOperands.push(rightOperands.pop());
+                                //operators.pop();
+                                break;
                             }
                         }
-                    } else
+
+                        if (leftOperands.isEmpty()) {
+                            leftOperands.push(rightOperands.pop());
+                            //operators.pop();
+                            break;
+                        }
+
+                        String operationCompleted = evaluate();
+
+                        if (openParenthesisFound) {
+                            if (operationCompleted.equals("("))
+                                thisIsNested = true;
+                        }
+
+                        if (openParenthesisFound && thisIsNested) {
+                            leftOperands.push(rightOperands.pop());
+                            operators.push("(");
+                            break;
+                        }
+
+                        if (operationCompleted.equals("("))
+                            openParenthesisFound = true;
+                    }
+                } else {
+                    if (operators.isEmpty()) {
+                        if (currentLeft != currentRight) {
+                            String num = parseNumber();
+                            if (!num.equals(""))
+                                leftOperands.push(num);
+                        }
                         operators.push(String.valueOf(currentOperator));
+                    } else if (rightOperands.isEmpty()) {
+                        String num = "";
+                        if (currentLeft != currentRight)
+                            num = parseNumber();
+
+                        if (!num.matches("")) {
+                            rightOperands.push(num);
+
+                            char previousOperator = operators.peek().charAt(0);
+
+                            if (operatorPrecedence.get(currentOperator) > operatorPrecedence.get(previousOperator)) {
+                                leftOperands.push(rightOperands.pop());
+                                operators.push(String.valueOf(currentOperator));
+                            } else {
+                                while (true) {
+                                    if (!operators.isEmpty())
+                                        previousOperator = operators.peek().charAt(0);
+                                    if (operators.isEmpty() || (operatorPrecedence.get(currentOperator) > operatorPrecedence.get(previousOperator))) {
+                                        leftOperands.push(rightOperands.pop());
+                                        operators.push(String.valueOf(currentOperator));
+                                        break;
+                                    }
+                                    if (previousOperator == '(') {
+                                        leftOperands.push(rightOperands.pop());
+                                        operators.push(String.valueOf(currentOperator));
+                                        break;
+                                    }
+                                    evaluate();
+                                }
+                            }
+                        } else
+                            operators.push(String.valueOf(currentOperator));
+                    }
                 }
+                if (!leftOperands.isEmpty())
+                    txtOutput.setText(leftOperands.peek());
+            } catch (Exception e1) {
+                txtOutput.setText("Malformed expression!");
+                e1.printStackTrace();
             }
-            txtOutput.setText(leftOperands.peek());
-            traceStacks();
         }
     }
 }
