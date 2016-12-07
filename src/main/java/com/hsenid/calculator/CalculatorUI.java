@@ -3,9 +3,10 @@ package com.hsenid.calculator;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.*;
+
+import static javax.swing.JOptionPane.*;
 
 /**
  * Created by hsenid on 12/1/16.
@@ -66,6 +67,9 @@ public class CalculatorUI extends Frame {
     private Map<Character, Integer> operatorPrecedence;
     private Set<String> functions;
 
+    //Memory: Variable declarations
+    private Double mem, ans;
+
     public CalculatorUI() {
         //History list initializations
         currentLeft = 0;
@@ -95,19 +99,19 @@ public class CalculatorUI extends Frame {
         //Action definition for the text change in the txtInput text field.
         txtInput.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(DocumentEvent de) {
                 currentRight = txtInput.getText().length();
             }
 
             @Override
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(DocumentEvent de) {
                 //leftOperands.flush();
                 //rightOperands.flush();
                 //operators.flush();
             }
 
             @Override
-            public void changedUpdate(DocumentEvent e) {
+            public void changedUpdate(DocumentEvent de) {
                 // TODO: 12/2/16 implement the behavior when the input string is changed
             }
         });
@@ -136,7 +140,7 @@ public class CalculatorUI extends Frame {
         btnSqrt.addActionListener(new ArithmeticOpsPressListener());
 
         btnClear.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 txtInput.setText("");
                 operators.flush();
                 leftOperands.flush();
@@ -147,7 +151,7 @@ public class CalculatorUI extends Frame {
         });
 
         btnEquals.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 // TODO: 12/1/16 Implement validation prior to evaluation
                 try {
                     if (txtInput.getText().matches("(.*)[\\d]+")) {
@@ -163,13 +167,92 @@ public class CalculatorUI extends Frame {
                         evaluate();
                     }
                     String result = rightOperands.pop();
-                    listHistoryArray.insertElementAt(txtInput.getText().concat("=").concat(result), listHistoryArray.getSize());
+                    String currentInput = txtInput.getText();
+
+                    if (ans != null)
+                        currentInput = currentInput.replaceAll("ans", ans.toString());
+
+                    listHistoryArray.insertElementAt(currentInput.concat("=").concat(result), listHistoryArray.getSize());
                     listHistory.setListData(listHistoryArray.toArray());
                     txtOutput.setText(result);
+                    txtInput.setText("");
+                    ans = Double.parseDouble(result);
+                    currentLeft = 0;
+                    currentRight = 0;
                 } catch (Exception e1) {
                     txtOutput.setText("Malformed expression!");
                     e1.printStackTrace();
                 }
+            }
+        });
+
+        btnMemAdd.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    String numInText = txtInput.getText();
+                    if (numInText.equals("ans")) {
+                        numInText = ans.toString();
+                    }
+
+                    if (mem == null)
+                        mem = new Double(numInText);
+                    else
+                        mem += Double.parseDouble(numInText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    txtOutput.setText("Syntax error!");
+                }
+            }
+        });
+
+        btnMemSub.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    String numInText = txtInput.getText();
+                    if (mem == null)
+                        mem = new Double(numInText);
+                    else
+                        mem += Double.parseDouble(numInText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    txtOutput.setText("Syntax error!");
+                }
+            }
+        });
+
+        btnMemRC.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                super.mouseClicked(me);
+
+                if (me.getClickCount() == 2) {
+                    mem = null;
+                } else if (me.getClickCount() == 1) {
+                    if (mem != null)
+                        txtInput.setText(txtInput.getText().concat(String.valueOf(mem)));
+                    else
+                        JOptionPane.showMessageDialog(null, "Memory is empty!", "Info", INFORMATION_MESSAGE);
+                }
+            }
+        });
+
+        btnAns.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (ans == null) {
+                    JOptionPane.showMessageDialog(null, "No previous calculations!", "Info", INFORMATION_MESSAGE);
+                    return;
+                }
+                txtInput.setText(txtInput.getText().concat("ans"));
+            }
+        });
+
+        btnShift.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO: 12/7/16 Implement shift key behavior
             }
         });
     }
@@ -181,6 +264,7 @@ public class CalculatorUI extends Frame {
             ex.printStackTrace();
         }
         JFrame frame = new JFrame("Calculator");
+        frame.setJMenuBar(createMenuBar());
         frame.setSize(new Dimension(542, 357));
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
@@ -190,10 +274,73 @@ public class CalculatorUI extends Frame {
         frame.setVisible(true);
     }
 
+    //
+    //UI Generation Methods
+    //
+
+    //Menu bar generation
+    public static JMenuBar createMenuBar() {
+        JMenuBar menuBar;
+        JMenu menuFile, menuEdit, menuView;
+        JMenuItem itmPreferences, itmLaunchPlotter;
+        JRadioButtonMenuItem rbMenuItem;
+        JCheckBoxMenuItem cbMenuItem;
+
+        //Create the menu bar.
+        menuBar = new JMenuBar();
+
+        //File menu.
+        menuFile = new JMenu("File");
+        menuFile.setMnemonic(KeyEvent.VK_F);
+        menuFile.getAccessibleContext().setAccessibleDescription("File");
+        menuBar.add(menuFile);
+
+        //File menu items
+        itmPreferences = new JMenuItem("Preferences");
+        itmPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+        itmPreferences.getAccessibleContext().setAccessibleDescription("Set the preferences");
+        menuFile.add(itmPreferences);
+
+        //Edit menu.
+        menuEdit = new JMenu("Edit");
+        menuEdit.setMnemonic(KeyEvent.VK_E);
+        menuEdit.getAccessibleContext().setAccessibleDescription("This menu does nothing");
+        menuBar.add(menuEdit);
+
+        //View Menu
+        menuView = new JMenu("View");
+        menuView.setMnemonic(KeyEvent.VK_V);
+        menuView.getAccessibleContext().setAccessibleDescription("View");
+        menuBar.add(menuView);
+
+        itmLaunchPlotter = new JMenuItem("Launch plotter");
+        itmLaunchPlotter.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK | InputEvent.ALT_MASK));
+        menuView.add(itmLaunchPlotter);
+
+        itmLaunchPlotter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Plotter.load();
+            }
+        });
+
+        return menuBar;
+    }
+
+    //
+    //Functional methods
+    //
     private String parseNumber() {
         String num = txtInput.getText();
         num = num.substring(currentLeft, currentRight - 1);
         currentLeft = currentRight;
+        if (num.equals("ans")) {
+            if (ans == null)
+                return "";
+            else {
+                return ans.toString();
+            }
+        }
         return num;
     }
 
