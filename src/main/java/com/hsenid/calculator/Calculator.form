@@ -15,6 +15,19 @@
         <properties/>
         <border type="none"/>
         <children>
+          <component id="527b2" class="javax.swing.JButton" binding="btnHex">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <gridbag top="2" left="2" bottom="2" right="2" weightx="0.0" weighty="0.0"/>
+            </constraints>
+            <properties>
+              <label value="Hex"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
+              <text value="Hex"/>
+            </properties>
+          </component>
           <component id="3e744" class="javax.swing.JButton" binding="btnOct">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -22,6 +35,9 @@
             </constraints>
             <properties>
               <label value="Oct"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="Oct"/>
             </properties>
           </component>
@@ -32,6 +48,9 @@
             </constraints>
             <properties>
               <label value="Dec"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="Dec"/>
             </properties>
           </component>
@@ -42,6 +61,9 @@
             </constraints>
             <properties>
               <label value="M+"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="M+"/>
             </properties>
           </component>
@@ -52,6 +74,9 @@
             </constraints>
             <properties>
               <label value="M-"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="M-"/>
             </properties>
           </component>
@@ -62,6 +87,9 @@
             </constraints>
             <properties>
               <label value="MRC"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="MRC"/>
             </properties>
           </component>
@@ -72,6 +100,9 @@
             </constraints>
             <properties>
               <label value="C"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="C"/>
             </properties>
           </component>
@@ -82,36 +113,48 @@
             </constraints>
             <properties>
               <label value="Bin"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="Bin"/>
             </properties>
           </component>
           <component id="d22ca" class="javax.swing.JButton" binding="btn9">
             <constraints>
-              <grid row="2" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="9"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="9"/>
             </properties>
           </component>
           <component id="a7381" class="javax.swing.JButton" binding="btn8">
             <constraints>
-              <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="8"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="8"/>
             </properties>
           </component>
           <component id="a691c" class="javax.swing.JButton" binding="btn7">
             <constraints>
-              <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="7"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="7"/>
             </properties>
           </component>
@@ -122,6 +165,9 @@
             </constraints>
             <properties>
               <label value="Sin"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="Sin"/>
             </properties>
           </component>
@@ -132,6 +178,9 @@
             </constraints>
             <properties>
               <label value="log"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="log"/>
             </properties>
           </component>
@@ -141,7 +190,11 @@
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
+              <actionCommand value="!"/>
               <label value="n!"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="n!"/>
             </properties>
           </component>
@@ -151,7 +204,11 @@
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
+              <actionCommand value="C"/>
               <label value="nCr"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="nCr"/>
             </properties>
           </component>
@@ -163,6 +220,9 @@
             <properties>
               <actionCommand value="^"/>
               <label value="x^y"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="x^y"/>
             </properties>
           </component>
@@ -173,46 +233,62 @@
             </constraints>
             <properties>
               <label value="Cos"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="Cos"/>
             </properties>
           </component>
           <component id="1f79e" class="javax.swing.JButton" binding="btn4">
             <constraints>
-              <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="4"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="4"/>
             </properties>
           </component>
           <component id="1cb3f" class="javax.swing.JButton" binding="btn5">
             <constraints>
-              <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="5"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="5"/>
             </properties>
           </component>
           <component id="81cd2" class="javax.swing.JButton" binding="btn6">
             <constraints>
-              <grid row="3" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="6"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="6"/>
             </properties>
           </component>
-          <component id="3b07e" class="javax.swing.JButton" binding="btnPermut">
+          <component id="3b07e" class="javax.swing.JButton" binding="btnPermute">
             <constraints>
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
+              <actionCommand value="P"/>
               <label value="nPr"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="nPr"/>
             </properties>
           </component>
@@ -223,6 +299,9 @@
             </constraints>
             <properties>
               <label value="√"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="√"/>
             </properties>
           </component>
@@ -233,36 +312,48 @@
             </constraints>
             <properties>
               <label value="Tan"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="Tan"/>
             </properties>
           </component>
           <component id="1e020" class="javax.swing.JButton" binding="btn1">
             <constraints>
-              <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="1"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="1"/>
             </properties>
           </component>
           <component id="3b579" class="javax.swing.JButton" binding="btn2">
             <constraints>
-              <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="2"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="2"/>
             </properties>
           </component>
           <component id="c1d11" class="javax.swing.JButton" binding="btn3">
             <constraints>
-              <grid row="4" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="3"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="3"/>
             </properties>
           </component>
@@ -273,37 +364,49 @@
             </constraints>
             <properties>
               <label value="Shift"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="Shift"/>
             </properties>
           </component>
           <component id="d507b" class="javax.swing.JButton" binding="btn0">
             <constraints>
-              <grid row="5" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="0"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="0"/>
             </properties>
           </component>
           <component id="b3894" class="javax.swing.JButton" binding="btnDot">
             <constraints>
-              <grid row="5" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
               <label value="."/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="."/>
             </properties>
           </component>
           <component id="3ffa9" class="javax.swing.JButton" binding="btnPlusMinus">
             <constraints>
-              <grid row="5" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
-              <actionCommand value=""/>
+              <actionCommand value="-"/>
               <label value="+/-"/>
+              <maximumSize width="46" height="30"/>
+              <minimumSize width="46" height="30"/>
+              <preferredSize width="46" height="30"/>
               <text value="+/-"/>
             </properties>
           </component>
@@ -324,6 +427,9 @@
             </constraints>
             <properties>
               <label value="*"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="*"/>
             </properties>
           </component>
@@ -334,6 +440,9 @@
             </constraints>
             <properties>
               <label value="/"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="/"/>
             </properties>
           </component>
@@ -344,6 +453,9 @@
             </constraints>
             <properties>
               <label value="+"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="+"/>
             </properties>
           </component>
@@ -354,6 +466,9 @@
             </constraints>
             <properties>
               <label value="-"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="-"/>
             </properties>
           </component>
@@ -364,6 +479,9 @@
             </constraints>
             <properties>
               <label value=")"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value=")"/>
             </properties>
           </component>
@@ -374,6 +492,9 @@
             </constraints>
             <properties>
               <label value="Ans"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="Ans"/>
             </properties>
           </component>
@@ -384,6 +505,9 @@
             </constraints>
             <properties>
               <label value="("/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="("/>
             </properties>
           </component>
@@ -394,17 +518,37 @@
             </constraints>
             <properties>
               <label value="%"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
               <text value="%"/>
             </properties>
           </component>
-          <component id="527b2" class="javax.swing.JButton" binding="btnHex">
+          <component id="adba6" class="javax.swing.JButton" binding="btnPi">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
-              <label value="Hex"/>
-              <text value="Hex"/>
+              <actionCommand value="π"/>
+              <label value="π"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
+              <text value="π"/>
+            </properties>
+          </component>
+          <component id="da473" class="javax.swing.JButton" binding="btnE">
+            <constraints>
+              <grid row="5" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
+            </constraints>
+            <properties>
+              <label value="e"/>
+              <maximumSize width="54" height="30"/>
+              <minimumSize width="54" height="30"/>
+              <preferredSize width="54" height="30"/>
+              <text value="e"/>
             </properties>
           </component>
         </children>

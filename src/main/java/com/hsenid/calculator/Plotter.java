@@ -7,10 +7,7 @@ package com.hsenid.calculator;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import javax.swing.*;
-
-import static java.lang.Math.*;
 
 public class Plotter extends JPanel {
 
@@ -18,7 +15,8 @@ public class Plotter extends JPanel {
     private int width = 1100;
     private int heigth = 900;
     private int padding = 25;
-    private Color lineColor = new Color(44, 102, 230, 180);
+    private Color sineColor = new Color(44, 102, 230, 180);
+    private Color cosColor = new Color(125, 23, 230, 180);
     private Color pointColor = new Color(100, 100, 100, 180);
     private Color gridColor = new Color(200, 200, 200, 200);
     private int pointWidth = 4;
@@ -52,16 +50,7 @@ public class Plotter extends JPanel {
         int intervalX = (getWidth() - (2 * padding)) / 8;
         int intervalY = (getHeight() - (2 * padding)) / 8;
 
-        for (int i = -1; i <= 1; i++) {
-            for (int x = -180; x <= 180; x++) {
-                double sinX = Math.sine(Math.toRadians(x));
-                int x1 = centerX + (intervalX * i * 2) + (x * intervalX / 180);
-                int y1 = centerY + (int) (sinX * intervalY);
-                graphPoints.add(new Point(x1, y1));
-            }
-        }
-
-
+        System.out.println(graphPoints.toString());
         // draw white background
         g2.setColor(Color.WHITE);
         g2.fillRect(padding, padding, getWidth() - (2 * padding), getHeight() - 2 * padding);
@@ -117,8 +106,35 @@ public class Plotter extends JPanel {
         g2.drawLine(padding, getHeight() / 2, getWidth() - padding, getHeight() / 2);
 
         Stroke oldStroke = g2.getStroke();
-        g2.setColor(lineColor);
+        g2.setColor(sineColor);
         g2.setStroke(GRAPH_STROKE);
+
+        //Sine function
+        for (int x = -360; x <= 360; x++) {
+            double sinX = Math.sine(Math.toRadians(x));
+            int x1 = centerX + (x * intervalX / 180);
+            int y1 = centerY - (int) (sinX * intervalY);
+            graphPoints.add(new Point(x1, y1));
+        }
+
+        for (int i = 0; i < graphPoints.size() - 1; i++) {
+            int x1 = graphPoints.get(i).x;
+            int y1 = graphPoints.get(i).y;
+            int x2 = graphPoints.get(i + 1).x;
+            int y2 = graphPoints.get(i + 1).y;
+            g2.drawLine(x1, y1, x2, y2);
+        }
+
+        g2.setColor(cosColor);
+        graphPoints.clear();
+        //Cosine function
+        for (int x = -360; x <= 360; x++) {
+            double sinX = 1 / Math.secant(Math.toRadians(x));
+            int x1 = centerX + (x * intervalX / 180);
+            int y1 = centerY - (int) (sinX * intervalY);
+            graphPoints.add(new Point(x1, y1));
+        }
+
         for (int i = 0; i < graphPoints.size() - 1; i++) {
             int x1 = graphPoints.get(i).x;
             int y1 = graphPoints.get(i).y;
