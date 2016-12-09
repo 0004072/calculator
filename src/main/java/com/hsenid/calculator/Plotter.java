@@ -50,7 +50,6 @@ public class Plotter extends JPanel {
         int intervalX = (getWidth() - (2 * padding)) / 8;
         int intervalY = (getHeight() - (2 * padding)) / 8;
 
-        System.out.println(graphPoints.toString());
         // draw white background
         g2.setColor(Color.WHITE);
         g2.fillRect(padding, padding, getWidth() - (2 * padding), getHeight() - 2 * padding);
@@ -129,9 +128,9 @@ public class Plotter extends JPanel {
         graphPoints.clear();
         //Cosine function
         for (int x = -360; x <= 360; x++) {
-            double sinX = 1 / Math.secant(Math.toRadians(x));
+            double cosX = 1 / Math.secant(Math.toRadians(x));
             int x1 = centerX + (x * intervalX / 180);
-            int y1 = centerY - (int) (sinX * intervalY);
+            int y1 = centerY - (int) (cosX * intervalY);
             graphPoints.add(new Point(x1, y1));
         }
 

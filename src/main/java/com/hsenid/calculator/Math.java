@@ -35,16 +35,12 @@ public class Math {
         return pow(base, exp);
     }
 
-    public static double power(double exp) {
-        return pow(E, exp);
-    }
-
     public static double logarithm(double base, double num) {
         return (log(num) / log(base));
     }
 
     public static double logarithm(double num) {
-        return (log(num));
+        return (log(num) / log(10));
     }
 
     public static String squareRoot(double x) {
@@ -64,12 +60,10 @@ public class Math {
     }
 
     public static double secant(double a) {
-        return Double.parseDouble(squareRoot(1 + pow(tangent(a), 2)));
+        return 1 / cos(a);
     }
 
     public static void main(String[] args) {
         System.out.println(secant(toRadians(45)));
     }
-
-    // TODO: 12/1/2016 Put on try catch on division
 }

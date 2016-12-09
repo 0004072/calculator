@@ -4,7 +4,11 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static com.hsenid.calculator.Math.*;
 import static javax.swing.JOptionPane.*;
@@ -72,7 +76,11 @@ public class CalculatorUI extends Frame {
     private Map<String, String> shiftPairs;
 
     //Memory: Variable declarations
-    private Double mem, ans;
+    private Double mem;
+    private String ans;
+
+    //Base converter: Input patterns
+    private Map<String, Pattern> basePatterns;
 
     public CalculatorUI() {
         //History list initializations
@@ -106,6 +114,7 @@ public class CalculatorUI extends Frame {
         functions.add("Sin");
         functions.add("Cos");
         functions.add("Tan");
+        functions.add("log");
         functions.add("√");
         functions.add("!");
 
@@ -114,6 +123,13 @@ public class CalculatorUI extends Frame {
         shiftPairs.put("Sin", "Cosec");
         shiftPairs.put("Cos", "Sec");
         shiftPairs.put("Tan", "Cot");
+
+        //Base patterns initialization
+        basePatterns = new HashMap<>();
+        basePatterns.put("hex", Pattern.compile("[\\dabcde]+"));
+        basePatterns.put("dec", Pattern.compile("[\\d]+"));
+        basePatterns.put("oct", Pattern.compile("[0-8]+"));
+        basePatterns.put("bin", Pattern.compile("[0-1]+"));
 
         //Action definition for the text change in the txtInput text field.
         txtInput.getDocument().addDocumentListener(new DocumentListener() {
@@ -131,7 +147,7 @@ public class CalculatorUI extends Frame {
 
             @Override
             public void changedUpdate(DocumentEvent de) {
-                // TODO: 12/2/16 implement the behavior when the input string is changed
+
             }
         });
 
@@ -169,6 +185,7 @@ public class CalculatorUI extends Frame {
         btnTan.addActionListener(new FunctionPressListener());
         btnSqrt.addActionListener(new FunctionPressListener());
         btnFact.addActionListener(new FunctionPressListener());
+        btnLog.addActionListener(new FunctionPressListener());
 
         btnClear.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -183,10 +200,9 @@ public class CalculatorUI extends Frame {
 
         btnEquals.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                // TODO: 12/1/16 Implement validation prior to evaluation
                 try {
-                    if (txtInput.getText().length() > 0 && currentLeft == 0 && currentRight == 0) {
-                        evaluateExpressionString(txtInput.getText());
+                    if (txtInput.getText().length() > 0 && currentLeft == 0) {
+                        rightOperands.push(String.valueOf(eval(txtInput.getText())));
                     } else {
                         if (txtInput.getText().matches("(.*)([\\d]+|π|e|ans)")) {
                             txtInput.setText(txtInput.getText().concat(" "));
@@ -198,6 +214,7 @@ public class CalculatorUI extends Frame {
                                 rightOperands.push(leftOperands.pop());
                                 break;
                             }
+                            traceStacks();
                             if (functions.contains(operators.peek())) {
                                 rightOperands.push(leftOperands.pop());
                             }
@@ -209,13 +226,13 @@ public class CalculatorUI extends Frame {
                     String currentInput = txtInput.getText();
 
                     if (ans != null)
-                        currentInput = currentInput.replaceAll("ans", ans.toString());
+                        currentInput = currentInput.replaceAll("ans", ans);
 
                     listHistoryArray.insertElementAt(currentInput.concat("=").concat(result), listHistoryArray.getSize());
                     listHistory.setListData(listHistoryArray.toArray());
                     txtOutput.setText(result);
                     txtInput.setText("");
-                    ans = Double.parseDouble(result);
+                    ans = result;
                     currentLeft = 0;
                     currentRight = 0;
                 } catch (Exception e1) {
@@ -294,22 +311,154 @@ public class CalculatorUI extends Frame {
                 // TODO: 12/7/16 Implement shift key behavior
             }
         });
+
+        btnHex.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = txtInput.getText();
+                String base = getCurrentBase();
+                try {
+                    if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
+                        throw new Exception("Invalid input string!");
+                    }
+                    switch (base) {
+                        case "hex":
+                            txtOutput.setText(input);
+                            break;
+
+                        case "dec":
+                            txtOutput.setText(Integer.toHexString(Integer.parseInt(input)));
+                            break;
+
+                        case "oct":
+                            txtOutput.setText(Integer.toHexString(Integer.parseInt(input, 8)));
+                            break;
+
+                        case "bin":
+                            txtOutput.setText(Integer.toHexString(Integer.parseInt(input, 2)));
+                            break;
+                    }
+                } catch (Exception ex) {
+                    txtOutput.setText(ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+
+        btnOct.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = txtInput.getText();
+                String base = getCurrentBase();
+                try {
+                    if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
+                        throw new Exception("Invalid input string!");
+                    }
+                    switch (base) {
+                        case "hex":
+                            txtOutput.setText(Integer.toOctalString(Integer.parseInt(input, 16)));
+                            break;
+
+                        case "dec":
+                            txtOutput.setText(Integer.toOctalString(Integer.parseInt(input)));
+                            break;
+
+                        case "oct":
+                            txtOutput.setText(input);
+                            break;
+
+                        case "bin":
+                            txtOutput.setText(Integer.toOctalString(Integer.parseInt(input, 2)));
+                            break;
+                    }
+                } catch (Exception ex) {
+                    txtOutput.setText(ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        btnDec.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = txtInput.getText();
+                String base = getCurrentBase();
+                try {
+                    if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
+                        throw new Exception("Invalid input string!");
+                    }
+                    switch (base) {
+                        case "hex":
+                            txtOutput.setText(String.valueOf(Integer.parseInt(input, 16)));
+                            break;
+
+                        case "dec":
+                            txtOutput.setText(input);
+                            break;
+
+                        case "oct":
+                            txtOutput.setText(String.valueOf(Integer.parseInt(input, 8)));
+                            break;
+
+                        case "bin":
+                            txtOutput.setText(String.valueOf(Integer.parseInt(input, 2)));
+                            break;
+                    }
+                } catch (Exception ex) {
+                    txtOutput.setText(ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        btnBin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = txtInput.getText();
+                String base = getCurrentBase();
+                try {
+                    if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
+                        throw new Exception("Invalid input string!");
+                    }
+                    switch (base) {
+                        case "hex":
+                            txtOutput.setText(Integer.toBinaryString(Integer.parseInt(input, 16)));
+                            break;
+
+                        case "dec":
+                            txtOutput.setText(Integer.toBinaryString(Integer.parseInt(input)));
+                            break;
+
+                        case "oct":
+                            txtOutput.setText(Integer.toBinaryString(Integer.parseInt(input, 8)));
+                            break;
+
+                        case "bin":
+                            txtOutput.setText(input);
+                            break;
+                    }
+                } catch (Exception ex) {
+                    txtOutput.setText(ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        });
     }
 
     public static void main(String[] args) {
-        GridBagConstraints c = new GridBagConstraints();
-
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        CalculatorUI obj = new CalculatorUI();
         JFrame frame = new JFrame("Calculator");
-        frame.setJMenuBar(createMenuBar());
+        frame.setJMenuBar(obj.createMenuBar());
         frame.setSize(new Dimension(542, 357));
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
-        frame.setContentPane(new CalculatorUI().mainPanel);
+        frame.setContentPane(obj.mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -319,8 +468,141 @@ public class CalculatorUI extends Frame {
     //UI Generation Methods
     //
 
+    public static double eval(final String str) {
+        return new Object() {
+            int pos = -1, ch;
+
+            void nextChar() {
+                ch = (++pos < str.length()) ? str.charAt(pos) : -1;
+            }
+
+            boolean isOperator(int thisChar) {
+                while (ch == ' ') nextChar();
+                if (ch == thisChar) {
+                    nextChar();
+                    return true;
+                }
+                return false;
+            }
+
+            double parse() {
+                nextChar();
+                double x = parseExpression();
+                if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char) ch);
+                return x;
+            }
+
+            // Grammar:
+            // expression = term | expression `+` term | expression `-` term
+            // term = factor | term `*` factor | term `/` factor
+            // factor = `+` factor | `-` factor | `(` expression `)`
+            //        | number | functionName factor | factor `^` factor
+
+            double parseExpression() {
+                double x = parseTerm();
+                for (; ; ) {
+                    if (isOperator('+')) x += parseTerm(); // addition
+                    else if (isOperator('-')) x -= parseTerm(); // subtraction
+                    else return x;
+                }
+            }
+
+            double parseTerm() {
+                double x = parseFactor();
+                for (; ; ) {
+                    if (isOperator('*'))
+                        x *= parseFactor(); // multiplication
+
+                    else if (isOperator('/'))
+                        x /= parseFactor(); // division
+
+                    else if (isOperator('C'))
+                        x = Math.combine((long) x, (long) parseFactor());
+
+                    else if (isOperator('P'))
+                        x = Math.permute((long) x, (long) parseFactor());
+
+                    else if (isOperator('%'))
+                        x = (x * parseFactor()) / 100;
+
+                    else return x;
+                }
+            }
+
+            double parseFactor() {
+                if (isOperator('+')) return parseFactor(); // unary plus
+                if (isOperator('-')) return -parseFactor(); // unary minus
+
+                double x;
+                int startPos = this.pos;
+                if (isOperator('(')) {
+                    // Parse parenthesis
+                    x = parseExpression();
+                    isOperator(')');
+                } else if ((ch >= '0' && ch <= '9') || ch == '.' || ch == 8495 || ch == 'π') {
+                    // Parse numbers
+                    if (ch == 'π')
+                        x = java.lang.Math.PI;
+
+                    else if (ch == 8495)
+                        x = java.lang.Math.E;
+
+                    else {
+                        while ((ch >= '0' && ch <= '9') || ch == '.')
+                            nextChar();
+                        x = Double.parseDouble(str.substring(startPos, this.pos));
+                    }
+                } else if ((ch >= 'a' && ch <= 'z') || ch == '√' || ch == '!') {
+                    // Parse built-in functions
+                    while ((ch >= 'a' && ch <= 'z') || ch == '√' || ch == '!')
+                        nextChar();
+                    String func = str.substring(startPos, this.pos);
+                    x = parseFactor();
+                    if (func.equals("√"))
+                        x = java.lang.Math.sqrt(x);
+
+                    else if (func.equals("sin"))
+                        x = java.lang.Math.sin(Math.toRadians(x));
+
+                    else if (func.equals("cos"))
+                        x = java.lang.Math.cos(Math.toRadians(x));
+
+                    else if (func.equals("tan"))
+                        x = java.lang.Math.tan(Math.toRadians(x));
+
+                    else if (func.equals("!"))
+                        x = factorial((long) x);
+
+                    else
+                        throw new RuntimeException("Unknown function: " + func);
+
+                } else {
+                    throw new RuntimeException("Unexpected: " + (char) ch);
+                }
+
+                if (isOperator('^')) x = java.lang.Math.pow(x, parseFactor()); // exponentiation
+
+                return x;
+            }
+        }.parse();
+    }
+
+    //Getters
+    public DefaultListModel<String> getListHistoryArray() {
+        return listHistoryArray;
+    }
+
+    //Setters
+    public void putNewHistory(String line) {
+        listHistoryArray.addElement(line);
+    }
+
+    public void resetHistoryList() {
+        listHistory.setListData(listHistoryArray.toArray());
+    }
+
     //Menu bar generation
-    public static JMenuBar createMenuBar() {
+    public JMenuBar createMenuBar() {
         JMenuBar menuBar;
         JMenu menuFile, menuEdit, menuView, subMenu1History;
         JMenuItem itmPreferences, itmLaunchPlotter, itmLoadHistory, itmSaveHistory, itmClearHistory;
@@ -387,14 +669,43 @@ public class CalculatorUI extends Frame {
         itmLoadHistory.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                FileDialog fd = new FileDialog(new JFrame(), "Choose history file", FileDialog.LOAD);
+                FileDialog fd = new FileDialog(new JFrame(), "Choose file...", FileDialog.LOAD);
                 fd.setDirectory("/home/hsenid/Documents");
                 fd.setVisible(true);
-                String filename = fd.getFile();
+                String filename = fd.getDirectory().concat("/").concat(fd.getFile());
                 if (filename != null && filename.endsWith(".txt")) {
-                    //File open process
-                    // TODO: 12/8/16 Complete this
-                    System.out.println("valid file");
+                    try {
+                        RandomAccessFile loadFile = new RandomAccessFile(filename, "r");
+                        FileChannel loadFileChannel = loadFile.getChannel();
+                        ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+                        StringBuffer line = new StringBuffer();
+
+                        while (loadFileChannel.read(buffer) > -1) {
+                            buffer.flip();
+                            for (int i = 0; i < buffer.limit(); i++) {
+                                char ch = (char) buffer.get();
+                                if (ch == '\n') {
+                                    putNewHistory(line.toString());
+                                    line.setLength(0);
+                                } else
+                                    line.append(ch);
+                            }
+                            buffer.clear();
+                        }
+                        resetHistoryList();
+                        loadFile.close();
+                        JOptionPane.showMessageDialog(null, "Successfully loaded!", "Info", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (FileNotFoundException fnfe) {
+                        fnfe.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "File not found!", "Error", JOptionPane.ERROR_MESSAGE);
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Could not write to the file specified!", "Error", JOptionPane.ERROR_MESSAGE);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Unknown error occurred!", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "Invalid file!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -407,17 +718,62 @@ public class CalculatorUI extends Frame {
                 // TODO: 12/8/16 Refine this
                 FileDialog fd = new FileDialog(new JFrame(), "Save as..", FileDialog.SAVE);
                 fd.setDirectory("/home/hsenid/Documents");
+                fd.setFile("CalHistory ".concat(new Date().toString()).concat(".txt"));
                 fd.setVisible(true);
-                String filename = fd.getFile();
+                String filename = fd.getDirectory().concat("/").concat(fd.getFile());
                 if (filename != null && filename.endsWith(".txt")) {
                     //File open process
-                    System.out.println("valid file");
+                    try {
+                        RandomAccessFile saveFile = new RandomAccessFile(filename, "rw");
+                        FileChannel saveFileChannel = saveFile.getChannel();
+                        ByteBuffer buffer = ByteBuffer.allocate(48);
+
+                        for (Object line : getListHistoryArray().toArray()) {
+                            buffer.clear();
+                            String lineToWrite = line.toString();
+
+                            if (!lineToWrite.endsWith("\n"))
+                                lineToWrite = lineToWrite.concat("\n");
+
+                            buffer.put(lineToWrite.getBytes());
+                            buffer.flip();
+
+                            while (buffer.hasRemaining()) {
+                                saveFileChannel.write(buffer);
+                            }
+                        }
+                        saveFile.close();
+                        JOptionPane.showMessageDialog(null, "Successfully saved!", "Info", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (FileNotFoundException fnfe) {
+                        fnfe.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "File not found!", "Error", JOptionPane.ERROR_MESSAGE);
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Could not write to the file specified!", "Error", JOptionPane.ERROR_MESSAGE);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Unknown error occurred!", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, "Invalid file!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
+
+        itmClearHistory.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listHistoryArray.clear();
+                listHistory.setListData(listHistoryArray.toArray());
+            }
+        });
         return menuBar;
+    }
+
+    //Conversion: Select base of current input
+    public String getCurrentBase() {
+        String[] choices = {"hex", "dec", "oct", "bin"};
+        return JOptionPane.showInputDialog(null, "What is the base of the value you have entered?", "Choose base...", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]).toString();
     }
 
     //
@@ -434,7 +790,7 @@ public class CalculatorUI extends Frame {
 
             num = "";
         }
-        if (num.equals("e"))
+        if (num.equals("ℯ"))
             return String.valueOf(java.lang.Math.E);
 
         if (num.equals("π"))
@@ -446,110 +802,94 @@ public class CalculatorUI extends Frame {
     private String evaluate() {
         // TODO: 12/8/16 Incorporate validations
         String operator = operators.pop();
-        if (!operator.equals("(")) {
-            if (functions.contains(operator)) {
-                double left = Double.parseDouble(rightOperands.pop());
-                switch (operator) {
-                    case "Sin":
-                        traceStacks();
-                        rightOperands.push(String.valueOf(sine(toRadians(left))));
-                        break;
-
-                    case "Cos":
-                        rightOperands.push(String.valueOf(1 / secant(toRadians(left))));
-                        break;
-
-                    case "Tan":
-                        rightOperands.push(String.valueOf(tangent(toRadians(left))));
-                        break;
-
-                    case "√":
-                        rightOperands.push(String.valueOf(squareRoot(left)));
-                        break;
-
-                    case "!":
-                        long n = (long) left;
-                        if (n != left)
+        try {
+            if (!operator.equals("(")) {
+                if (functions.contains(operator)) {
+                    double left = Double.parseDouble(rightOperands.pop());
+                    switch (operator) {
+                        case "Sin":
+                            traceStacks();
+                            rightOperands.push(String.valueOf(sine(toRadians(left))));
                             break;
-                        rightOperands.push(String.valueOf(factorial(n)));
-                        break;
-                }
-            } else {
-                double left = Double.parseDouble(leftOperands.pop());
-                double right = Double.parseDouble(rightOperands.pop());
-                switch (operator) {
-                    case "+":
-                        rightOperands.push(String.valueOf(left + right));
-                        break;
 
-                    case "-":
-                        rightOperands.push(String.valueOf(left - right));
-                        break;
+                        case "Cos":
+                            rightOperands.push(String.valueOf(1 / secant(toRadians(left))));
+                            break;
 
-                    case "*":
-                        rightOperands.push(String.valueOf(left * right));
-                        break;
+                        case "Tan":
+                            rightOperands.push(String.valueOf(tangent(toRadians(left))));
+                            break;
 
-                    case "/":
-                        try {
+                        case "√":
+                            rightOperands.push(String.valueOf(squareRoot(left)));
+                            break;
+
+                        case "!":
+                            long n = (long) left;
+                            if (n != left)
+                                break;
+                            rightOperands.push(String.valueOf(factorial(n)));
+                            break;
+
+                        case "log":
+                            rightOperands.push(String.valueOf(logarithm(left)));
+                            break;
+                    }
+                } else {
+                    double left = Double.parseDouble(leftOperands.pop());
+                    double right = Double.parseDouble(rightOperands.pop());
+                    switch (operator) {
+                        case "+":
+                            rightOperands.push(String.valueOf(left + right));
+                            break;
+
+                        case "-":
+                            rightOperands.push(String.valueOf(left - right));
+                            break;
+
+                        case "*":
+                            rightOperands.push(String.valueOf(left * right));
+                            break;
+
+                        case "/":
                             rightOperands.push(String.valueOf(left / right));
-                        } catch (ArithmeticException ae) {
-                            ae.printStackTrace();
-                        }
-                        break;
-
-                    case "%":
-                        rightOperands.push(String.valueOf(left * right / 100));
-                        break;
-
-                    case "^":
-                        rightOperands.push(String.valueOf(power(left, right)));
-                        break;
-
-                    case "C":
-                        long nC = (long) left;
-                        long rC = (long) right;
-                        if (nC != left || rC != right) {
                             break;
-                        }
-                        rightOperands.push(String.valueOf(combine(nC, rC)));
-                        break;
 
-                    case "P":
-                        long nP = (long) left;
-                        long rP = (long) right;
-                        if (nP != left || rP != right) {
+                        case "%":
+                            rightOperands.push(String.valueOf(left * right / 100));
                             break;
-                        }
-                        rightOperands.push(String.valueOf(combine(nP, rP)));
-                        break;
 
-                    default:
-                        try {
-                            throw new UnsupportedOperationException();
-                        } catch (UnsupportedOperationException uoe) {
-                            uoe.printStackTrace();
-                        }
+                        case "^":
+                            rightOperands.push(String.valueOf(power(left, right)));
+                            break;
+
+                        case "C":
+                            long nC = (long) left;
+                            long rC = (long) right;
+                            if (nC != left || rC != right) {
+                                throw new RuntimeException("Invalid number format!");
+                            }
+                            rightOperands.push(String.valueOf(combine(nC, rC)));
+                            break;
+
+                        case "P":
+                            long nP = (long) left;
+                            long rP = (long) right;
+                            if (nP != left || rP != right) {
+                                break;
+                            }
+                            rightOperands.push(String.valueOf(combine(nP, rP)));
+                            break;
+
+                        default:
+                            throw new RuntimeException("Invalid operation!");
+                    }
                 }
             }
+        } catch (Exception e) {
+            txtOutput.setText(e.getMessage());
         }
         return operator;
-    }
-
-    private void evaluateExpressionString(String expressionString) {
-        currentLeft = 0;
-        currentRight = 0;
-
-        for (; true; currentRight++) {
-            if (currentRight == expressionString.length()) {
-                break;
-            }
-
-            if (operatorPrecedence.containsKey(String.valueOf(expressionString.charAt(currentRight)))) {
-                System.out.println(expressionString.charAt(currentRight));
-                traverse(String.valueOf(expressionString.charAt(currentRight)));
-            }
-        }
     }
 
     private void traverse(String currentOperator) {
@@ -674,13 +1014,12 @@ public class CalculatorUI extends Frame {
     private class HistorySelectListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
+            currentLeft = 0;
             Object selected = listHistory.getSelectedValue();
             if (selected == null)
                 return;
             txtInput.setText(selected.toString().split("=")[0]);
             listHistory.clearSelection();
-            currentLeft = 0;
-            currentRight = 0;
         }
     }
 
@@ -694,8 +1033,11 @@ public class CalculatorUI extends Frame {
     private class ArithmeticOpsPressListener extends NumericPressListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (txtInput.getText().length() > 3 && currentLeft == 0 && currentRight != 0) {
+                String unevaluatedPrefix = txtInput.getText().concat(e.getActionCommand()).substring(currentLeft, currentRight);
+                leftOperands.push(String.valueOf(eval(unevaluatedPrefix)));
+            }
             super.actionPerformed(e);
-
             //On-the-fly evaluation of expressions
             String currentOperator = e.getActionCommand();
             traverse(currentOperator);
@@ -709,7 +1051,6 @@ public class CalculatorUI extends Frame {
             txtInput.setText(txtInput.getText().concat("("));
             operators.push(e.getActionCommand());
             operators.push("(");
-            traceStacks();
             currentLeft = txtInput.getText().length();
         }
     }

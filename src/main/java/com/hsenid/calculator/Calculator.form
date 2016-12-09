@@ -544,11 +544,11 @@
               <gridbag top="2" left="2" bottom="2" right="2" weightx="1.0" weighty="1.0"/>
             </constraints>
             <properties>
-              <label value="e"/>
+              <label value="ℯ"/>
               <maximumSize width="54" height="30"/>
               <minimumSize width="54" height="30"/>
               <preferredSize width="54" height="30"/>
-              <text value="e"/>
+              <text value="ℯ"/>
             </properties>
           </component>
         </children>
