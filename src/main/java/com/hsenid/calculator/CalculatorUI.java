@@ -1,20 +1,26 @@
 package com.hsenid.calculator;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.hsenid.calculator.Math.*;
-import static javax.swing.JOptionPane.*;
+import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
 
 /**
- * Created by hsenid on 12/1/16.
+ * CalculatorUI Class:
+ * Created by 000407 on 12/1/16.
  */
 public class CalculatorUI extends Frame {
     private JPanel mainPanel;
@@ -214,14 +220,12 @@ public class CalculatorUI extends Frame {
                                 rightOperands.push(leftOperands.pop());
                                 break;
                             }
-                            traceStacks();
                             if (functions.contains(operators.peek())) {
                                 rightOperands.push(leftOperands.pop());
                             }
                             evaluate();
                         }
                     }
-                    traceStacks();
                     String result = rightOperands.pop();
                     String currentInput = txtInput.getText();
 
@@ -236,7 +240,7 @@ public class CalculatorUI extends Frame {
                     currentLeft = 0;
                     currentRight = 0;
                 } catch (Exception e1) {
-                    txtOutput.setText("Malformed expression!");
+                    txtOutput.setText(e1.getMessage());
                     e1.printStackTrace();
                 }
             }
@@ -248,7 +252,7 @@ public class CalculatorUI extends Frame {
                 try {
                     String numInText = txtInput.getText();
                     if (numInText.equals("ans")) {
-                        numInText = ans.toString();
+                        numInText = ans;
                     }
 
                     if (mem == null)
@@ -319,7 +323,7 @@ public class CalculatorUI extends Frame {
                 String base = getCurrentBase();
                 try {
                     if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
-                        throw new Exception("Invalid input string!");
+                        throw new RuntimeException("Invalid input string!");
                     }
                     switch (base) {
                         case "hex":
@@ -353,7 +357,7 @@ public class CalculatorUI extends Frame {
                 String base = getCurrentBase();
                 try {
                     if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
-                        throw new Exception("Invalid input string!");
+                        throw new RuntimeException("Invalid input string!");
                     }
                     switch (base) {
                         case "hex":
@@ -386,7 +390,7 @@ public class CalculatorUI extends Frame {
                 String base = getCurrentBase();
                 try {
                     if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
-                        throw new Exception("Invalid input string!");
+                        throw new RuntimeException("Invalid input string!");
                     }
                     switch (base) {
                         case "hex":
@@ -419,7 +423,7 @@ public class CalculatorUI extends Frame {
                 String base = getCurrentBase();
                 try {
                     if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
-                        throw new Exception("Invalid input string!");
+                        throw new RuntimeException("Invalid input string!");
                     }
                     switch (base) {
                         case "hex":
@@ -488,7 +492,8 @@ public class CalculatorUI extends Frame {
             double parse() {
                 nextChar();
                 double x = parseExpression();
-                if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char) ch);
+                if (pos < str.length())
+                    throw new RuntimeException("Unexpected: " + (char) ch);
                 return x;
             }
 
@@ -501,8 +506,10 @@ public class CalculatorUI extends Frame {
             double parseExpression() {
                 double x = parseTerm();
                 for (; ; ) {
-                    if (isOperator('+')) x += parseTerm(); // addition
-                    else if (isOperator('-')) x -= parseTerm(); // subtraction
+                    if (isOperator('+'))
+                        x += parseTerm(); // addition
+                    else if (isOperator('-'))
+                        x -= parseTerm(); // subtraction
                     else return x;
                 }
             }
@@ -530,8 +537,10 @@ public class CalculatorUI extends Frame {
             }
 
             double parseFactor() {
-                if (isOperator('+')) return parseFactor(); // unary plus
-                if (isOperator('-')) return -parseFactor(); // unary minus
+                if (isOperator('+'))
+                    return parseFactor(); // unary plus
+                if (isOperator('-'))
+                    return -parseFactor(); // unary minus
 
                 double x;
                 int startPos = this.pos;
@@ -620,7 +629,7 @@ public class CalculatorUI extends Frame {
 
         //File menu items
         itmPreferences = new JMenuItem("Preferences");
-        itmPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+        itmPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK));
         itmPreferences.getAccessibleContext().setAccessibleDescription("Set the preferences");
         menuFile.add(itmPreferences);
 
@@ -635,15 +644,15 @@ public class CalculatorUI extends Frame {
 
         //Menu items
         itmSaveHistory = new JMenuItem("Save...");
-        itmSaveHistory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        itmSaveHistory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
         subMenu1History.add(itmSaveHistory);
 
         itmLoadHistory = new JMenuItem("Load...");
-        itmLoadHistory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK));
+        itmLoadHistory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_MASK));
         subMenu1History.add(itmLoadHistory);
 
         itmClearHistory = new JMenuItem("Clear");
-        itmClearHistory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, ActionEvent.CTRL_MASK));
+        itmClearHistory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_MASK));
         subMenu1History.add(itmClearHistory);
 
         menuEdit.add(subMenu1History);
@@ -662,7 +671,7 @@ public class CalculatorUI extends Frame {
         itmLaunchPlotter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Plotter.load();
+                Plotter obj = new Plotter("Plotter");
             }
         });
 
@@ -715,7 +724,6 @@ public class CalculatorUI extends Frame {
         itmSaveHistory.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO: 12/8/16 Refine this
                 FileDialog fd = new FileDialog(new JFrame(), "Save as..", FileDialog.SAVE);
                 fd.setDirectory("/home/hsenid/Documents");
                 fd.setFile("CalHistory ".concat(new Date().toString()).concat(".txt"));
@@ -785,7 +793,7 @@ public class CalculatorUI extends Frame {
         currentLeft = currentRight;
         if (num.equals("ans")) {
             if (ans != null) {
-                return ans.toString();
+                return ans;
             }
 
             num = "";
@@ -800,94 +808,89 @@ public class CalculatorUI extends Frame {
     }
 
     private String evaluate() {
-        // TODO: 12/8/16 Incorporate validations
         String operator = operators.pop();
-        try {
-            if (!operator.equals("(")) {
-                if (functions.contains(operator)) {
-                    double left = Double.parseDouble(rightOperands.pop());
-                    switch (operator) {
-                        case "Sin":
-                            traceStacks();
-                            rightOperands.push(String.valueOf(sine(toRadians(left))));
-                            break;
+        //try {
+        if (!operator.equals("(")) {
+            if (functions.contains(operator)) {
+                double left = Double.parseDouble(rightOperands.pop());
+                switch (operator) {
+                    case "Sin":
+                        rightOperands.push(String.valueOf(sine(toRadians(left))));
+                        break;
 
-                        case "Cos":
-                            rightOperands.push(String.valueOf(1 / secant(toRadians(left))));
-                            break;
+                    case "Cos":
+                        rightOperands.push(String.valueOf(1 / secant(toRadians(left))));
+                        break;
 
-                        case "Tan":
-                            rightOperands.push(String.valueOf(tangent(toRadians(left))));
-                            break;
+                    case "Tan":
+                        rightOperands.push(String.valueOf(tangent(toRadians(left))));
+                        break;
 
-                        case "√":
-                            rightOperands.push(String.valueOf(squareRoot(left)));
-                            break;
+                    case "√":
+                        rightOperands.push(String.valueOf(squareRoot(left)));
+                        break;
 
-                        case "!":
-                            long n = (long) left;
-                            if (n != left)
-                                break;
-                            rightOperands.push(String.valueOf(factorial(n)));
+                    case "!":
+                        long n = (long) left;
+                        if (n != left)
                             break;
+                        rightOperands.push(String.valueOf(factorial(n)));
+                        break;
 
-                        case "log":
-                            rightOperands.push(String.valueOf(logarithm(left)));
-                            break;
-                    }
-                } else {
-                    double left = Double.parseDouble(leftOperands.pop());
-                    double right = Double.parseDouble(rightOperands.pop());
-                    switch (operator) {
-                        case "+":
-                            rightOperands.push(String.valueOf(left + right));
-                            break;
+                    case "log":
+                        rightOperands.push(String.valueOf(logarithm(left)));
+                        break;
+                }
+            } else {
+                double left = Double.parseDouble(leftOperands.pop());
+                double right = Double.parseDouble(rightOperands.pop());
+                switch (operator) {
+                    case "+":
+                        rightOperands.push(String.valueOf(left + right));
+                        break;
 
-                        case "-":
-                            rightOperands.push(String.valueOf(left - right));
-                            break;
+                    case "-":
+                        rightOperands.push(String.valueOf(left - right));
+                        break;
 
-                        case "*":
-                            rightOperands.push(String.valueOf(left * right));
-                            break;
+                    case "*":
+                        rightOperands.push(String.valueOf(left * right));
+                        break;
 
-                        case "/":
-                            rightOperands.push(String.valueOf(left / right));
-                            break;
+                    case "/":
+                        rightOperands.push(String.valueOf(left / right));
+                        break;
 
-                        case "%":
-                            rightOperands.push(String.valueOf(left * right / 100));
-                            break;
+                    case "%":
+                        rightOperands.push(String.valueOf(left * right / 100));
+                        break;
 
-                        case "^":
-                            rightOperands.push(String.valueOf(power(left, right)));
-                            break;
+                    case "^":
+                        rightOperands.push(String.valueOf(power(left, right)));
+                        break;
 
-                        case "C":
-                            long nC = (long) left;
-                            long rC = (long) right;
-                            if (nC != left || rC != right) {
-                                throw new RuntimeException("Invalid number format!");
-                            }
-                            rightOperands.push(String.valueOf(combine(nC, rC)));
-                            break;
+                    case "C":
+                        long nC = (long) left;
+                        long rC = (long) right;
+                        if (nC != left || rC != right) {
+                            throw new RuntimeException("Invalid number format!");
+                        }
+                        rightOperands.push(String.valueOf(combine(nC, rC)));
+                        break;
 
-                        case "P":
-                            long nP = (long) left;
-                            long rP = (long) right;
-                            if (nP != left || rP != right) {
-                                break;
-                            }
-                            rightOperands.push(String.valueOf(combine(nP, rP)));
+                    case "P":
+                        long nP = (long) left;
+                        long rP = (long) right;
+                        if (nP != left || rP != right) {
                             break;
+                        }
+                        rightOperands.push(String.valueOf(combine(nP, rP)));
+                        break;
 
-                        default:
-                            throw new RuntimeException("Invalid operation!");
-                    }
+                    default:
+                        throw new RuntimeException("Invalid operation!");
                 }
             }
-        } catch (Exception e) {
-            txtOutput.setText(e.getMessage());
         }
         return operator;
     }
@@ -901,7 +904,6 @@ public class CalculatorUI extends Frame {
                     if (!num.equals(""))
                         rightOperands.push(num);
                 }
-                traceStacks();
                 currentRight++;
                 currentLeft = currentRight;
                 boolean openParenthesisFound = false;
@@ -910,20 +912,11 @@ public class CalculatorUI extends Frame {
                     if (!leftOperands.isEmpty() && operators.isEmpty() && rightOperands.isEmpty())
                         break;
 
-                        /*if (operators.isEmpty()) {
-                            //Error conditions need to be handled
-
-                            //If no errors
-                            leftOperands.push(rightOperands.pop());
-                            break;
-                        }*/
-
                     if (!operators.isEmpty() && operators.peek().equals("(")) {
                         if (rightOperands.isEmpty()) {
                             rightOperands.push(leftOperands.pop());
                             //operators.pop();
                         }
-
 
                         if (leftOperands.isEmpty()) {
                             leftOperands.push(rightOperands.pop());

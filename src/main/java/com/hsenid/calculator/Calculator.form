@@ -126,9 +126,9 @@
             </constraints>
             <properties>
               <label value="9"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="9"/>
             </properties>
           </component>
@@ -139,9 +139,9 @@
             </constraints>
             <properties>
               <label value="8"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="8"/>
             </properties>
           </component>
@@ -152,9 +152,9 @@
             </constraints>
             <properties>
               <label value="7"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="7"/>
             </properties>
           </component>
@@ -246,9 +246,9 @@
             </constraints>
             <properties>
               <label value="4"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="4"/>
             </properties>
           </component>
@@ -259,9 +259,9 @@
             </constraints>
             <properties>
               <label value="5"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="5"/>
             </properties>
           </component>
@@ -272,9 +272,9 @@
             </constraints>
             <properties>
               <label value="6"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="6"/>
             </properties>
           </component>
@@ -325,9 +325,9 @@
             </constraints>
             <properties>
               <label value="1"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="1"/>
             </properties>
           </component>
@@ -338,9 +338,9 @@
             </constraints>
             <properties>
               <label value="2"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="2"/>
             </properties>
           </component>
@@ -351,9 +351,9 @@
             </constraints>
             <properties>
               <label value="3"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="3"/>
             </properties>
           </component>
@@ -377,9 +377,9 @@
             </constraints>
             <properties>
               <label value="0"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="0"/>
             </properties>
           </component>
@@ -390,9 +390,9 @@
             </constraints>
             <properties>
               <label value="."/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="."/>
             </properties>
           </component>
@@ -404,9 +404,9 @@
             <properties>
               <actionCommand value="-"/>
               <label value="+/-"/>
-              <maximumSize width="46" height="30"/>
-              <minimumSize width="46" height="30"/>
-              <preferredSize width="46" height="30"/>
+              <maximumSize width="48" height="30"/>
+              <minimumSize width="48" height="30"/>
+              <preferredSize width="48" height="30"/>
               <text value="+/-"/>
             </properties>
           </component>
@@ -417,6 +417,9 @@
             </constraints>
             <properties>
               <label value="="/>
+              <maximumSize width="38" height="30"/>
+              <minimumSize width="38" height="30"/>
+              <preferredSize width="38" height="30"/>
               <text value="="/>
             </properties>
           </component>
