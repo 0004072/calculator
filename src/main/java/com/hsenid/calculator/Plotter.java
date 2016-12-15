@@ -1,5 +1,8 @@
 package com.hsenid.calculator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -15,17 +18,11 @@ import java.util.List;
  */
 public class Plotter extends JFrame {
     private List<Point> graphPoints;
-
-    public void reloadPlane(CartesianPlane cp){
-        getContentPane().removeAll();
-        getContentPane().add(cp);
-        revalidate();
-        repaint();
-    }
-
+    private Logger logger;
     public Plotter(String title) throws HeadlessException {
         super(title);
         graphPoints = new ArrayList<>();
+        logger = LogManager.getLogger(Plotter.class);
 
         CartesianPlane cp = new CartesianPlane(graphPoints);
         cp.setPreferredSize(new Dimension(1100, 700));
@@ -79,17 +76,25 @@ public class Plotter extends JFrame {
                     reloadPlane(cp);
                 }
                 catch (NullPointerException ne) {
-                    ne.printStackTrace();
+                    logger.error(ne);
                 }
                 catch (RuntimeException re){
                     JOptionPane.showMessageDialog(null, re.getMessage());
+                    logger.error(re);
                 }
                 catch (Exception ex){
-                    ex.printStackTrace();
+                    logger.error(ex);
                 }
             }
         });
 
         setJMenuBar(menubar);
+    }
+
+    public void reloadPlane(CartesianPlane cp) {
+        getContentPane().removeAll();
+        getContentPane().add(cp);
+        revalidate();
+        repaint();
     }
 }

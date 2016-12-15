@@ -1,5 +1,8 @@
 package com.hsenid.calculator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -7,13 +10,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static com.hsenid.calculator.Math.*;
 import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
@@ -23,6 +23,8 @@ import static javax.swing.JOptionPane.INFORMATION_MESSAGE;
  * Created by 000407 on 12/1/16.
  */
 public class CalculatorUI extends Frame {
+    //Logger
+    private static Logger logger;
     private JPanel mainPanel;
     private JTextField txtInput;
     private JButton btnOct;
@@ -68,32 +70,32 @@ public class CalculatorUI extends Frame {
     private JTextField txtOutput;
     private JButton btnPi;
     private JButton btnE;
+    //History data
     private DefaultListModel<String> listHistoryArray;
-
+    private History history;
     //Input string manipulation pointers
     private int currentLeft, currentRight;
-
     //Operation stacks: Declarations
     private OpStack leftOperands, operators, rightOperands;
-
     //Operations & functions
     private Map<String, Integer> operatorPrecedence;
     private Set<String> functions;
     private Map<String, String> shiftPairs;
-
+    //Base Conversions
+    private BaseConversions baseConversions;
     //Memory: Variable declarations
     private Double mem;
     private String ans;
 
-    //Base converter: Input patterns
-    private Map<String, Pattern> basePatterns;
-
     public CalculatorUI() {
-        //History list initializations
+        //Expression string traversal parameters
         currentLeft = 0;
         currentRight = 0;
+
+        //History list initializations
         listHistoryArray = new DefaultListModel<>();
         listHistory.addListSelectionListener(new HistorySelectListener());
+        history = new History();
 
         //Operation stacks: Initializations
         leftOperands = new OpStack("left");
@@ -124,18 +126,17 @@ public class CalculatorUI extends Frame {
         functions.add("√");
         functions.add("!");
 
+        //Base Conversions init
+        baseConversions = new BaseConversions();
+
         //Shift pairs initializations
         shiftPairs = new HashMap<>();
         shiftPairs.put("Sin", "Cosec");
         shiftPairs.put("Cos", "Sec");
         shiftPairs.put("Tan", "Cot");
 
-        //Base patterns initialization
-        basePatterns = new HashMap<>();
-        basePatterns.put("hex", Pattern.compile("[\\dabcde]+"));
-        basePatterns.put("dec", Pattern.compile("[\\d]+"));
-        basePatterns.put("oct", Pattern.compile("[0-8]+"));
-        basePatterns.put("bin", Pattern.compile("[0-1]+"));
+        //Logger : Initialization
+        logger = LogManager.getLogger(CalculatorUI.class);
 
         //Action definition for the text change in the txtInput text field.
         txtInput.getDocument().addDocumentListener(new DocumentListener() {
@@ -193,92 +194,82 @@ public class CalculatorUI extends Frame {
         btnFact.addActionListener(new FunctionPressListener());
         btnLog.addActionListener(new FunctionPressListener());
 
-        btnClear.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
+        btnClear.addActionListener(ae -> {
+            txtInput.setText("");
+            operators.flush();
+            leftOperands.flush();
+            rightOperands.flush();
+            currentLeft = 0;
+            currentRight = 0;
+        });
+
+        btnEquals.addActionListener(ae -> {
+            try {
+                if (txtInput.getText().length() > 0 && currentLeft == 0) {
+                    rightOperands.push(String.valueOf(eval(txtInput.getText())));
+                } else {
+                    if (txtInput.getText().matches("(.*)([\\d]+|π|e|ans)")) {
+                        txtInput.setText(txtInput.getText().concat(" "));
+                        rightOperands.push(parseNumber());
+                    }
+
+                    while (!leftOperands.isEmpty()) {
+                        if (operators.isEmpty() && rightOperands.isEmpty()) {
+                            rightOperands.push(leftOperands.pop());
+                            break;
+                        }
+                        if (functions.contains(operators.peek())) {
+                            rightOperands.push(leftOperands.pop());
+                        }
+                        evaluate();
+                    }
+                }
+                String result = rightOperands.pop();
+                String currentInput = txtInput.getText();
+
+                if (ans != null)
+                    currentInput = currentInput.replaceAll("ans", ans);
+
+                listHistoryArray.insertElementAt(currentInput.concat("=").concat(result), listHistoryArray.getSize());
+                listHistory.setListData(listHistoryArray.toArray());
+                txtOutput.setText(result);
                 txtInput.setText("");
-                operators.flush();
-                leftOperands.flush();
-                rightOperands.flush();
+                ans = result;
                 currentLeft = 0;
                 currentRight = 0;
+            } catch (Exception ex) {
+                txtOutput.setText(ex.getMessage());
+                logger.info(ex);
             }
         });
 
-        btnEquals.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    if (txtInput.getText().length() > 0 && currentLeft == 0) {
-                        rightOperands.push(String.valueOf(eval(txtInput.getText())));
-                    } else {
-                        if (txtInput.getText().matches("(.*)([\\d]+|π|e|ans)")) {
-                            txtInput.setText(txtInput.getText().concat(" "));
-                            rightOperands.push(parseNumber());
-                        }
-
-                        while (!leftOperands.isEmpty()) {
-                            if (operators.isEmpty() && rightOperands.isEmpty()) {
-                                rightOperands.push(leftOperands.pop());
-                                break;
-                            }
-                            if (functions.contains(operators.peek())) {
-                                rightOperands.push(leftOperands.pop());
-                            }
-                            evaluate();
-                        }
-                    }
-                    String result = rightOperands.pop();
-                    String currentInput = txtInput.getText();
-
-                    if (ans != null)
-                        currentInput = currentInput.replaceAll("ans", ans);
-
-                    listHistoryArray.insertElementAt(currentInput.concat("=").concat(result), listHistoryArray.getSize());
-                    listHistory.setListData(listHistoryArray.toArray());
-                    txtOutput.setText(result);
-                    txtInput.setText("");
-                    ans = result;
-                    currentLeft = 0;
-                    currentRight = 0;
-                } catch (Exception e1) {
-                    txtOutput.setText(e1.getMessage());
-                    e1.printStackTrace();
+        btnMemAdd.addActionListener(ae -> {
+            try {
+                String numInText = txtInput.getText();
+                if (numInText.equals("ans")) {
+                    numInText = ans;
                 }
+
+                if (mem == null)
+                    mem = new Double(numInText);
+                else
+                    mem += Double.parseDouble(numInText);
+            } catch (Exception ex) {
+                txtOutput.setText("Syntax error!");
+                logger.info(ex);
             }
         });
 
-        btnMemAdd.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    String numInText = txtInput.getText();
-                    if (numInText.equals("ans")) {
-                        numInText = ans;
-                    }
-
-                    if (mem == null)
-                        mem = new Double(numInText);
-                    else
-                        mem += Double.parseDouble(numInText);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    txtOutput.setText("Syntax error!");
-                }
-            }
-        });
-
-        btnMemSub.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    String numInText = txtInput.getText();
-                    if (mem == null)
-                        mem = new Double(numInText);
-                    else
-                        mem += Double.parseDouble(numInText);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    txtOutput.setText("Syntax error!");
-                }
+        btnMemSub.addActionListener(ae -> {
+            try {
+                String numInText = txtInput.getText();
+                if (mem == null)
+                    mem = new Double(numInText);
+                else
+                    mem += Double.parseDouble(numInText);
+            } catch (Exception ex) {
+                txtOutput.setText("Syntax error!");
+                logger.info(ex);
             }
         });
 
@@ -298,154 +289,55 @@ public class CalculatorUI extends Frame {
             }
         });
 
-        btnAns.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (ans == null) {
-                    JOptionPane.showMessageDialog(null, "No previous calculations!", "Info", INFORMATION_MESSAGE);
-                    return;
-                }
-                txtInput.setText(txtInput.getText().concat("ans"));
+        btnAns.addActionListener(e -> {
+            if (ans == null) {
+                JOptionPane.showMessageDialog(null, "No previous calculations!", "Info", INFORMATION_MESSAGE);
+                return;
+            }
+            txtInput.setText(txtInput.getText().concat("ans"));
+        });
+
+        btnShift.addActionListener(e -> {
+            // TODO: 12/7/16 Implement shift key behavior
+        });
+
+        btnHex.addActionListener(e -> {
+            String input = txtInput.getText();
+            try {
+                baseConversions.toHex(input);
+            } catch (Exception ex) {
+                txtOutput.setText(ex.getMessage());
+                logger.info(ex);
             }
         });
 
-        btnShift.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // TODO: 12/7/16 Implement shift key behavior
+        btnOct.addActionListener(e -> {
+            String input = txtInput.getText();
+            try {
+                baseConversions.toOct(input);
+            } catch (Exception ex) {
+                txtOutput.setText(ex.getMessage());
+                logger.info(ex);
             }
         });
 
-        btnHex.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String input = txtInput.getText();
-                String base = getCurrentBase();
-                try {
-                    if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
-                        throw new RuntimeException("Invalid input string!");
-                    }
-                    switch (base) {
-                        case "hex":
-                            txtOutput.setText(input);
-                            break;
-
-                        case "dec":
-                            txtOutput.setText(Integer.toHexString(Integer.parseInt(input)));
-                            break;
-
-                        case "oct":
-                            txtOutput.setText(Integer.toHexString(Integer.parseInt(input, 8)));
-                            break;
-
-                        case "bin":
-                            txtOutput.setText(Integer.toHexString(Integer.parseInt(input, 2)));
-                            break;
-                    }
-                } catch (Exception ex) {
-                    txtOutput.setText(ex.getMessage());
-                    ex.printStackTrace();
-                }
+        btnDec.addActionListener(e -> {
+            String input = txtInput.getText();
+            try {
+                baseConversions.toDec(input);
+            } catch (Exception ex) {
+                txtOutput.setText(ex.getMessage());
+                logger.info(ex);
             }
         });
 
-
-        btnOct.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String input = txtInput.getText();
-                String base = getCurrentBase();
-                try {
-                    if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
-                        throw new RuntimeException("Invalid input string!");
-                    }
-                    switch (base) {
-                        case "hex":
-                            txtOutput.setText(Integer.toOctalString(Integer.parseInt(input, 16)));
-                            break;
-
-                        case "dec":
-                            txtOutput.setText(Integer.toOctalString(Integer.parseInt(input)));
-                            break;
-
-                        case "oct":
-                            txtOutput.setText(input);
-                            break;
-
-                        case "bin":
-                            txtOutput.setText(Integer.toOctalString(Integer.parseInt(input, 2)));
-                            break;
-                    }
-                } catch (Exception ex) {
-                    txtOutput.setText(ex.getMessage());
-                    ex.printStackTrace();
-                }
-            }
-        });
-
-        btnDec.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String input = txtInput.getText();
-                String base = getCurrentBase();
-                try {
-                    if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
-                        throw new RuntimeException("Invalid input string!");
-                    }
-                    switch (base) {
-                        case "hex":
-                            txtOutput.setText(String.valueOf(Integer.parseInt(input, 16)));
-                            break;
-
-                        case "dec":
-                            txtOutput.setText(input);
-                            break;
-
-                        case "oct":
-                            txtOutput.setText(String.valueOf(Integer.parseInt(input, 8)));
-                            break;
-
-                        case "bin":
-                            txtOutput.setText(String.valueOf(Integer.parseInt(input, 2)));
-                            break;
-                    }
-                } catch (Exception ex) {
-                    txtOutput.setText(ex.getMessage());
-                    ex.printStackTrace();
-                }
-            }
-        });
-
-        btnBin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String input = txtInput.getText();
-                String base = getCurrentBase();
-                try {
-                    if (!Pattern.matches(basePatterns.get(base).toString(), input)) {
-                        throw new RuntimeException("Invalid input string!");
-                    }
-                    switch (base) {
-                        case "hex":
-                            txtOutput.setText(Integer.toBinaryString(Integer.parseInt(input, 16)));
-                            break;
-
-                        case "dec":
-                            txtOutput.setText(Integer.toBinaryString(Integer.parseInt(input)));
-                            break;
-
-                        case "oct":
-                            txtOutput.setText(Integer.toBinaryString(Integer.parseInt(input, 8)));
-                            break;
-
-                        case "bin":
-                            txtOutput.setText(input);
-                            break;
-                    }
-                } catch (Exception ex) {
-                    txtOutput.setText(ex.getMessage());
-                    ex.printStackTrace();
-                }
+        btnBin.addActionListener(e -> {
+            String input = txtInput.getText();
+            try {
+                baseConversions.toBin(input);
+            } catch (Exception ex) {
+                txtOutput.setText(ex.getMessage());
+                logger.info(ex);
             }
         });
     }
@@ -454,7 +346,7 @@ public class CalculatorUI extends Frame {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error(ex);
         }
         CalculatorUI obj = new CalculatorUI();
         JFrame frame = new JFrame("Calculator");
@@ -468,13 +360,10 @@ public class CalculatorUI extends Frame {
         frame.setVisible(true);
     }
 
-    //
-    //UI Generation Methods
-    //
-
     public static double eval(final String str) {
         return new Object() {
             int pos = -1, ch;
+            int current;
 
             void nextChar() {
                 ch = (++pos < str.length()) ? str.charAt(pos) : -1;
@@ -484,6 +373,7 @@ public class CalculatorUI extends Frame {
                 while (ch == ' ') nextChar();
                 if (ch == thisChar) {
                     nextChar();
+                    current = ch;
                     return true;
                 }
                 return false;
@@ -493,7 +383,7 @@ public class CalculatorUI extends Frame {
                 nextChar();
                 double x = parseExpression();
                 if (pos < str.length())
-                    throw new RuntimeException("Unexpected: " + (char) ch);
+                    throw new InvalidNumberException("Unexpected: " + (char) ch);
                 return x;
             }
 
@@ -523,11 +413,39 @@ public class CalculatorUI extends Frame {
                     else if (isOperator('/'))
                         x /= parseFactor(); // division
 
-                    else if (isOperator('C'))
-                        x = Math.combine((long) x, (long) parseFactor());
+                    else if (isOperator('C')) {
+                        double r = parseFactor();
 
-                    else if (isOperator('P'))
-                        x = Math.permute((long) x, (long) parseFactor());
+                        if (x % 1 > 0)
+                            throw new InvalidNumberException(x + " : Not an integer!");
+
+                        if (r % 1 > 0)
+                            throw new InvalidNumberException(r + " : Not an integer!");
+
+                        if (x < 0)
+                            throw new InvalidNumberException(x + " : Negative integer!");
+
+                        if (r < 0)
+                            throw new InvalidNumberException(r + " : Negative integer!");
+
+                        x = Math.combine((long) x, (long) r);
+                    } else if (isOperator('P')) {
+                        double r = parseFactor();
+
+                        if (x % 1 > 0)
+                            throw new InvalidNumberException(x + " : Not an integer!");
+
+                        if (r % 1 > 0)
+                            throw new InvalidNumberException(r + " : Not an integer!");
+
+                        if (x < 0)
+                            throw new InvalidNumberException(x + " : Negative integer!");
+
+                        if (r < 0)
+                            throw new InvalidNumberException(r + " : Negative integer!");
+
+                        x = Math.permute((long) x, (long) r);
+                    }
 
                     else if (isOperator('%'))
                         x = (x * parseFactor()) / 100;
@@ -583,10 +501,10 @@ public class CalculatorUI extends Frame {
                         x = factorial((long) x);
 
                     else
-                        throw new RuntimeException("Unknown function: " + func);
+                        throw new InvalidNumberException("Unknown function: " + func);
 
                 } else {
-                    throw new RuntimeException("Unexpected: " + (char) ch);
+                    throw new InvalidNumberException("Unexpected: " + (char) ch);
                 }
 
                 if (isOperator('^')) x = java.lang.Math.pow(x, parseFactor()); // exponentiation
@@ -596,27 +514,11 @@ public class CalculatorUI extends Frame {
         }.parse();
     }
 
-    //Getters
-    public DefaultListModel<String> getListHistoryArray() {
-        return listHistoryArray;
-    }
-
-    //Setters
-    public void putNewHistory(String line) {
-        listHistoryArray.addElement(line);
-    }
-
-    public void resetHistoryList() {
-        listHistory.setListData(listHistoryArray.toArray());
-    }
-
     //Menu bar generation
     public JMenuBar createMenuBar() {
         JMenuBar menuBar;
         JMenu menuFile, menuEdit, menuView, subMenu1History;
         JMenuItem itmPreferences, itmLaunchPlotter, itmLoadHistory, itmSaveHistory, itmClearHistory;
-        JRadioButtonMenuItem rbMenuItem;
-        JCheckBoxMenuItem cbMenuItem;
 
         //Create the menu bar.
         menuBar = new JMenuBar();
@@ -668,120 +570,24 @@ public class CalculatorUI extends Frame {
         itmLaunchPlotter.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK | InputEvent.ALT_MASK));
         menuView.add(itmLaunchPlotter);
 
-        itmLaunchPlotter.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Plotter obj = new Plotter("Plotter");
-            }
+        //Menu item actions
+        itmLaunchPlotter.addActionListener(e -> {
+            Plotter obj = new Plotter("Plotter");
         });
 
-        itmLoadHistory.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FileDialog fd = new FileDialog(new JFrame(), "Choose file...", FileDialog.LOAD);
-                fd.setDirectory("/home/hsenid/Documents");
-                fd.setVisible(true);
-                String filename = fd.getDirectory().concat("/").concat(fd.getFile());
-                if (filename != null && filename.endsWith(".txt")) {
-                    try {
-                        RandomAccessFile loadFile = new RandomAccessFile(filename, "r");
-                        FileChannel loadFileChannel = loadFile.getChannel();
-                        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        itmLoadHistory.addActionListener(e -> history.load(listHistory, listHistoryArray));
 
-                        StringBuffer line = new StringBuffer();
+        itmSaveHistory.addActionListener(e -> history.save(listHistoryArray));
 
-                        while (loadFileChannel.read(buffer) > -1) {
-                            buffer.flip();
-                            for (int i = 0; i < buffer.limit(); i++) {
-                                char ch = (char) buffer.get();
-                                if (ch == '\n') {
-                                    putNewHistory(line.toString());
-                                    line.setLength(0);
-                                } else
-                                    line.append(ch);
-                            }
-                            buffer.clear();
-                        }
-                        resetHistoryList();
-                        loadFile.close();
-                        JOptionPane.showMessageDialog(null, "Successfully loaded!", "Info", JOptionPane.INFORMATION_MESSAGE);
-                    } catch (FileNotFoundException fnfe) {
-                        fnfe.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "File not found!", "Error", JOptionPane.ERROR_MESSAGE);
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Could not write to the file specified!", "Error", JOptionPane.ERROR_MESSAGE);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Unknown error occurred!", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Invalid file!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
+        itmClearHistory.addActionListener(e -> {
+            listHistoryArray.clear();
+            listHistory.setListData(listHistoryArray.toArray());
         });
 
-        itmSaveHistory.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FileDialog fd = new FileDialog(new JFrame(), "Save as..", FileDialog.SAVE);
-                fd.setDirectory("/home/hsenid/Documents");
-                fd.setFile("CalHistory ".concat(new Date().toString()).concat(".txt"));
-                fd.setVisible(true);
-                String filename = fd.getDirectory().concat("/").concat(fd.getFile());
-                if (filename != null && filename.endsWith(".txt")) {
-                    //File open process
-                    try {
-                        RandomAccessFile saveFile = new RandomAccessFile(filename, "rw");
-                        FileChannel saveFileChannel = saveFile.getChannel();
-                        ByteBuffer buffer = ByteBuffer.allocate(48);
+        itmPreferences.addActionListener(e -> {
 
-                        for (Object line : getListHistoryArray().toArray()) {
-                            buffer.clear();
-                            String lineToWrite = line.toString();
-
-                            if (!lineToWrite.endsWith("\n"))
-                                lineToWrite = lineToWrite.concat("\n");
-
-                            buffer.put(lineToWrite.getBytes());
-                            buffer.flip();
-
-                            while (buffer.hasRemaining()) {
-                                saveFileChannel.write(buffer);
-                            }
-                        }
-                        saveFile.close();
-                        JOptionPane.showMessageDialog(null, "Successfully saved!", "Info", JOptionPane.INFORMATION_MESSAGE);
-                    } catch (FileNotFoundException fnfe) {
-                        fnfe.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "File not found!", "Error", JOptionPane.ERROR_MESSAGE);
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Could not write to the file specified!", "Error", JOptionPane.ERROR_MESSAGE);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Unknown error occurred!", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Invalid file!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        itmClearHistory.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                listHistoryArray.clear();
-                listHistory.setListData(listHistoryArray.toArray());
-            }
         });
         return menuBar;
-    }
-
-    //Conversion: Select base of current input
-    public String getCurrentBase() {
-        String[] choices = {"hex", "dec", "oct", "bin"};
-        return JOptionPane.showInputDialog(null, "What is the base of the value you have entered?", "Choose base...", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]).toString();
     }
 
     //
@@ -809,7 +615,6 @@ public class CalculatorUI extends Frame {
 
     private String evaluate() {
         String operator = operators.pop();
-        //try {
         if (!operator.equals("(")) {
             if (functions.contains(operator)) {
                 double left = Double.parseDouble(rightOperands.pop());
@@ -831,10 +636,11 @@ public class CalculatorUI extends Frame {
                         break;
 
                     case "!":
-                        long n = (long) left;
-                        if (n != left)
-                            break;
-                        rightOperands.push(String.valueOf(factorial(n)));
+                        //long n = (long) left;
+                        if (left % 1 > 0) {
+                            throw new InvalidNumberException(left + " : Not an integer!");
+                        }
+                        rightOperands.push(String.valueOf(factorial((long) left)));
                         break;
 
                     case "log":
@@ -870,25 +676,33 @@ public class CalculatorUI extends Frame {
                         break;
 
                     case "C":
-                        long nC = (long) left;
-                        long rC = (long) right;
-                        if (nC != left || rC != right) {
-                            throw new RuntimeException("Invalid number format!");
-                        }
-                        rightOperands.push(String.valueOf(combine(nC, rC)));
-                        break;
-
                     case "P":
-                        long nP = (long) left;
-                        long rP = (long) right;
-                        if (nP != left || rP != right) {
-                            break;
+                        if (left % 1 > 0) {
+                            throw new InvalidNumberException(left + " : Not an integer!");
                         }
-                        rightOperands.push(String.valueOf(combine(nP, rP)));
+
+                        if (right % 1 > 0) {
+                            throw new InvalidNumberException(right + " : Not an integer!");
+                        }
+
+                        if (left < 0) {
+                            throw new InvalidNumberException(left + " : Negative integer!");
+                        }
+
+                        if (right < 0) {
+                            throw new InvalidNumberException(right + " : Negative integer!");
+                        }
+
+                        if (operator.equals("C"))
+                            rightOperands.push(String.valueOf(combine((long) left, (long) right)));
+
+                        else
+                            rightOperands.push(String.valueOf(permute((long) left, (long) right)));
+
                         break;
 
                     default:
-                        throw new RuntimeException("Invalid operation!");
+                        throw new InvalidNumberException("Invalid operation!");
                 }
             }
         }
@@ -915,19 +729,16 @@ public class CalculatorUI extends Frame {
                     if (!operators.isEmpty() && operators.peek().equals("(")) {
                         if (rightOperands.isEmpty()) {
                             rightOperands.push(leftOperands.pop());
-                            //operators.pop();
                         }
 
                         if (leftOperands.isEmpty()) {
                             leftOperands.push(rightOperands.pop());
-                            //operators.pop();
                             break;
                         }
                     }
 
                     if (leftOperands.isEmpty()) {
                         leftOperands.push(rightOperands.pop());
-                        //operators.pop();
                         break;
                     }
 
@@ -991,9 +802,9 @@ public class CalculatorUI extends Frame {
             }
             if (!leftOperands.isEmpty())
                 txtOutput.setText(leftOperands.peek());
-        } catch (Exception e1) {
+        } catch (Exception ex) {
             txtOutput.setText("Malformed expression!");
-            e1.printStackTrace();
+            logger.info(ex);
         }
     }
 

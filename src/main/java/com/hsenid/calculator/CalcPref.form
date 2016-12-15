@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.hsenid.calculator.CalcPref">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridBagLayout">
+    <constraints>
+      <xy x="20" y="20" width="300" height="400"/>
+    </constraints>
+    <properties>
+      <maximumSize width="300" height="400"/>
+      <minimumSize width="300" height="400"/>
+      <opaque value="true"/>
+      <preferredSize width="300" height="400"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="42b6d" layout-manager="GridBagLayout">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <maximumSize width="300" height="150"/>
+          <minimumSize width="300" height="150"/>
+          <opaque value="false"/>
+          <preferredSize width="300" height="150"/>
+        </properties>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <grid id="8cc35" layout-manager="GridBagLayout">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <maximumSize width="300" height="50"/>
+          <minimumSize width="300" height="50"/>
+          <preferredSize width="300" height="50"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="961e1" class="javax.swing.JRadioButton" binding="fileRadioButton" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <gridbag weightx="0.0" weighty="0.0"/>
+            </constraints>
+            <properties>
+              <text value="File"/>
+            </properties>
+          </component>
+          <component id="9b5d9" class="javax.swing.JRadioButton" binding="databaseRadioButton" default-binding="true">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <gridbag weightx="0.0" weighty="0.0"/>
+            </constraints>
+            <properties>
+              <text value="Database"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+    </children>
+  </grid>
+  <buttonGroups>
+    <group name="optSource">
+      <member id="9b5d9"/>
+      <member id="9b5d9"/>
+      <member id="961e1"/>
+    </group>
+  </buttonGroups>
+</form>
