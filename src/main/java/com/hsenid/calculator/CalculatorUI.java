@@ -413,6 +413,9 @@ public class CalculatorUI extends Frame {
                     else if (isOperator('/'))
                         x /= parseFactor(); // division
 
+                    else if (isOperator('^'))
+                        x = power(x, parseFactor());
+
                     else if (isOperator('C')) {
                         double r = parseFactor();
 
@@ -500,14 +503,18 @@ public class CalculatorUI extends Frame {
                     else if (func.equals("!"))
                         x = factorial((long) x);
 
+                    else if (func.equals("^"))
+                        x = power(x, parseFactor());
+
                     else
                         throw new InvalidNumberException("Unknown function: " + func);
 
                 } else {
                     throw new InvalidNumberException("Unexpected: " + (char) ch);
                 }
-
-                if (isOperator('^')) x = java.lang.Math.pow(x, parseFactor()); // exponentiation
+                //double num = parseFactor();
+                //System.out.println(x + " " + num);
+                //if (isOperator('^')) x = java.lang.Math.pow(x, parseFactor()); // exponentiation
 
                 return x;
             }

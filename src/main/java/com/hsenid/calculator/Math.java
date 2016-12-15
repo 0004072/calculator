@@ -16,7 +16,9 @@ public class Math {
     }
 
     //Permutations & Combinations
-    public static long factorial(long n) {
+    public static long factorial(long n) throws RuntimeException {
+        if (n < 0)
+            throw new RuntimeException("Invalid number!");
         if (n <= 1)
             return 1;
         return n * factorial(n - 1);

@@ -5,8 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -61,30 +59,24 @@ public class Plotter extends JFrame {
         setVisible(true);
 
         //Actions
-        itmChangeFunction.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                graphPoints.clear();
-                try {
-                    String function = JOptionPane.showInputDialog("<html>Enter the function needs to be plotted. Note the following when the function is entered.<ul><li>Use 'x' to represent the variable</li></ul>", "");
-                    for(int x = -300; x <= 300; x++){
-                        int y = (int) CalculatorUI.eval(function.replaceAll("x", String.valueOf(x)));
-                        graphPoints.add(new Point(x, y));
-                    }
-                    CartesianPlane cp = new CartesianPlane(graphPoints);
-                    cp.setPreferredSize(new Dimension(1100, 700));
-                    reloadPlane(cp);
+        itmChangeFunction.addActionListener(e -> {
+            graphPoints.clear();
+            try {
+                String function = JOptionPane.showInputDialog("<html>Enter the function needs to be plotted. Note the following when the function is entered.<ul><li>Use 'x' to represent the variable</li></ul>", "");
+                for (int x1 = -300; x1 <= 300; x1++) {
+                    int y1 = (int) CalculatorUI.eval(function.replaceAll("x", String.valueOf(x1)));
+                    graphPoints.add(new Point(x1, y1));
                 }
-                catch (NullPointerException ne) {
-                    logger.error(ne);
-                }
-                catch (RuntimeException re){
-                    JOptionPane.showMessageDialog(null, re.getMessage());
-                    logger.error(re);
-                }
-                catch (Exception ex){
-                    logger.error(ex);
-                }
+                CartesianPlane cp1 = new CartesianPlane(graphPoints);
+                cp1.setPreferredSize(new Dimension(1100, 700));
+                reloadPlane(cp1);
+            } catch (NullPointerException ne) {
+                logger.error(ne);
+            } catch (RuntimeException re) {
+                JOptionPane.showMessageDialog(null, re.getMessage());
+                logger.error(re);
+            } catch (Exception ex) {
+                logger.error(ex);
             }
         });
 
